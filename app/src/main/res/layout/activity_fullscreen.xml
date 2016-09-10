@@ -2,22 +2,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0099cc"
+    android:background="@drawable/launcher_background"
     tools:context=".pages.FullscreenActivity">
 
     <!-- The primary full-screen view. This can be replaced with whatever view
          is needed to present your content, e.g. VideoView, SurfaceView,
          TextureView, etc. -->
-    <TextView
+    <RelativeLayout
         android:id="@+id/fullscreen_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:keepScreenOn="true"
-        android:text="@string/dummy_content"
-        android:textColor="#33b5e5"
-        android:textSize="50sp"
-        android:textStyle="bold" />
+        android:keepScreenOn="true">
+
+    </RelativeLayout>
 
     <!-- This FrameLayout insets its children based on system windows using
          android:fitsSystemWindows. -->
@@ -26,25 +23,71 @@
         android:layout_height="match_parent"
         android:fitsSystemWindows="true">
 
-        <LinearLayout
+        <RelativeLayout
             android:id="@+id/fullscreen_content_controls"
-            style="?metaButtonBarStyle"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
-            android:background="@color/black_overlay"
-            android:orientation="horizontal"
+            android:paddingBottom="@dimen/launcher_button_size"
             tools:ignore="UselessParent">
 
-            <Button
-                android:id="@+id/dummy_button"
-                style="?metaButtonBarButtonStyle"
-                android:layout_width="0dp"
+            <LinearLayout
+                style="?metaButtonBarStyle"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/dummy_button" />
+                android:background="@color/black_overlay"
+                android:divider="?android:dividerVertical"
+                android:dividerPadding="8dp"
+                android:orientation="horizontal"
+                android:showDividers="middle"
+                tools:ignore="UselessParent">
 
-        </LinearLayout>
+                <Button
+                    android:id="@+id/button"
+                    style="?metaButtonBarStyle"
+                    android:layout_width="@dimen/launcher_button_size"
+                    android:layout_height="@dimen/launcher_button_size"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:text="New Button"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white_overlay" />
+
+                <Button
+                    android:id="@+id/button2"
+                    style="?metaButtonBarStyle"
+                    android:layout_width="@dimen/launcher_button_size"
+                    android:layout_height="@dimen/launcher_button_size"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:text="New Button"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white_overlay" />
+
+                <Button
+                    android:id="@+id/button3"
+                    style="?metaButtonBarStyle"
+                    android:layout_width="@dimen/launcher_button_size"
+                    android:layout_height="@dimen/launcher_button_size"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:text="New Button"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white_overlay" />
+
+                <Button
+                    android:id="@+id/button4"
+                    style="?metaButtonBarStyle"
+                    android:layout_width="@dimen/launcher_button_size"
+                    android:layout_height="@dimen/launcher_button_size"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:text="New Button"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white_overlay" />
+            </LinearLayout>
+        </RelativeLayout>
+
     </FrameLayout>
 
 </FrameLayout>
