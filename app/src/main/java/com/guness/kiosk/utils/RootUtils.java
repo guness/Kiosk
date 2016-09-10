@@ -61,7 +61,6 @@ public class RootUtils {
     }
 
     private static void closeSilently(Closeable... xs) {
-        // Note: on Android API levels prior to 19 Socket does not implement Closeable
         for (Closeable x : xs) {
             if (x != null) {
                 try {

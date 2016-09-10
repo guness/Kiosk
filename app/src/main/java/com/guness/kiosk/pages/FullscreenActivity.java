@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.guness.kiosk.R;
+import com.guness.kiosk.services.BackgroundService;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -73,6 +74,7 @@ public class FullscreenActivity extends AppCompatActivity {
         int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
         decorView.setSystemUiVisibility(uiOptions);
 
+        startService(new Intent(this, BackgroundService.class));
     }
 
     @Override
