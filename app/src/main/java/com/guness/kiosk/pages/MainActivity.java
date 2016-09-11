@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 String message;
                 try {
-                    message = RootUtils.runAsRoot("ls -al");
+                    message = RootUtils.run(true, "ls -al");
                 } catch (IllegalAccessException e) {
                     message = e.getMessage();
                 }

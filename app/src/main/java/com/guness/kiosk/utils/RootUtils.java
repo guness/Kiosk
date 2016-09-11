@@ -15,19 +15,19 @@ public class RootUtils {
 
     private static final String TAG = RootUtils.class.getSimpleName();
 
-    public static String runAsRoot(String... strings) throws IllegalAccessException {
+    public static String run(boolean asRoot, String... strings) throws IllegalAccessException {
         String res = "";
         DataOutputStream outputStream = null;
         InputStream response = null;
-        Process su;
+        Process process;
         try {
-            su = Runtime.getRuntime().exec("su");
+            process = Runtime.getRuntime().exec(asRoot ? "su" : "sh");
         } catch (IOException e) {
             throw new IllegalAccessException("Permission denied, cannot run su !!!");
         }
         try {
-            outputStream = new DataOutputStream(su.getOutputStream());
-            response = su.getInputStream();
+            outputStream = new DataOutputStream(process.getOutputStream());
+            response = process.getInputStream();
 
             for (String s : strings) {
                 outputStream.writeBytes(s + "\n");
@@ -37,11 +37,14 @@ public class RootUtils {
             outputStream.writeBytes("exit\n");
             outputStream.flush();
             try {
-                su.waitFor();
+                process.waitFor();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             res = readFully(response);
+            if (res.endsWith("\n")) {
+                res = res.substring(0, res.length() - 1);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
