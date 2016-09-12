@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import com.guness.kiosk.R;
 import com.guness.kiosk.services.BackgroundService;
+import com.guness.kiosk.services.OverlayService;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -78,6 +79,18 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+       // stopService(new Intent(this, OverlayService.class));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        startService(new Intent(this, OverlayService.class));
+    }
+
+    @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
 
@@ -101,6 +114,7 @@ public class FullscreenActivity extends AppCompatActivity {
                 }
                 break;
             case R.id.button2:
+                startActivity(new Intent(this, MainActivity.class));
                 text = "Button 2";
                 break;
             case R.id.button3:
