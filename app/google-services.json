@@ -15,6 +15,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "285681095917-2e7cogqai147dbh6ul8gra1oh8qfoe18.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.guness.kiosk",
+            "certificate_hash": "5FA66FD808BDAEBD43806D7DAE50A5AA964E8BF9"
+          }
+        },
+        {
+          "client_id": "285681095917-sn7o4h8lots5hj6u1h41be6hhmd7u9ve.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.guness.kiosk",
+            "certificate_hash": "ECFDE58BCCAF812FB65A3FB4D34E0306309E1B6F"
+          }
+        },
+        {
           "client_id": "285681095917-pak4835failm1sh5oh2igbp62u2ombp1.apps.googleusercontent.com",
           "client_type": 3
         }

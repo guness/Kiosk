@@ -4,7 +4,7 @@
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.ACCESS_SUPERUSER" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
 
     <application
@@ -34,6 +34,8 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".pages.SetupActivity" />
+
         <receiver
             android:name=".receivers.BootReceiver"
             android:enabled="true"
@@ -51,6 +53,7 @@
         <service
             android:name=".services.OverlayService"
             android:enabled="true" />
+
     </application>
 
 </manifest>

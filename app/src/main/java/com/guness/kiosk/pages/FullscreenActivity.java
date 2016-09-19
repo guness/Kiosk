@@ -59,45 +59,41 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fullscreen);
-        ButterKnife.bind(this);
 
-        // Set up the user interaction to manually show or hide the system UI.
-        mContentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                hide();
-            }
-        });
+        if (getSharedPreferences(null, MODE_PRIVATE).getBoolean(SetupActivity.SETUP_COMPLETED, false)) {
+            setContentView(R.layout.activity_fullscreen);
+            ButterKnife.bind(this);
 
-        View decorView = getWindow().getDecorView();
+            // Set up the user interaction to manually show or hide the system UI.
+            mContentView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    hide();
+                }
+            });
+
+            View decorView = getWindow().getDecorView();
 // Hide the status bar.
-        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-        decorView.setSystemUiVisibility(uiOptions);
+            int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+            decorView.setSystemUiVisibility(uiOptions);
 
+            delayedHide(100);
+        } else {
+            startActivity(new Intent(this, SetupActivity.class));
+        }
         startService(new Intent(this, BackgroundService.class));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-       // stopService(new Intent(this, OverlayService.class));
+        // stopService(new Intent(this, OverlayService.class));
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         startService(new Intent(this, OverlayService.class));
-    }
-
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-
-        // Trigger the initial hide() shortly after the activity has been
-        // created, to briefly hint to the user that UI controls
-        // are available.
-        delayedHide(100);
     }
 
     @Override

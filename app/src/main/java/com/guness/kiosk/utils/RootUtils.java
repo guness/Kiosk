@@ -1,5 +1,6 @@
 package com.guness.kiosk.utils;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
@@ -53,7 +54,7 @@ public class RootUtils {
         return res;
     }
 
-    private static String readFully(InputStream is) throws IOException {
+    private static String readFully(@NonNull InputStream is) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buffer = new byte[1024];
         int length;
