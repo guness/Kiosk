@@ -34,6 +34,10 @@ android {
         }
     }
     productFlavors {
+        ACR122U {
+            buildConfigField 'int', 'READER_VENDOR_ID', '1839'
+            buildConfigField 'int', 'READER_PRODUCT_ID', '8704'
+        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
