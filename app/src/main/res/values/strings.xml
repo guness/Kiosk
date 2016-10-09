@@ -11,5 +11,6 @@
     <string name="overlay_explanation">Overlay button may require user permission on new devices.</string>
     <string name="card_reader_explanation">Card Reader device must be connected before enabling.</string>
     <string name="system_bar_explanation">Hiding system bars requires root abilities. Device will reboot upon saving.</string>
+    <string name="unexptected_behaviour">Overlay is not permitted</string>
 
 </resources>

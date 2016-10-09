@@ -9,10 +9,12 @@ import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.widget.Switch;
+import android.widget.Toast;
 
 import com.guness.kiosk.R;
 import com.guness.kiosk.services.OverlayService;
@@ -33,6 +35,8 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String OVERLAY_ENABLED = "OVERLAY_ENABLED";
     public static final String CARD_READER_ENABLED = "CARD_READER_ENABLED";
     public static final String SYSTEM_BARS_HIDDEN = "SYSTEM_BARS_HIDDEN";
+
+    private static final int ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE = 100001;
 
     @BindView(R.id.toolbar)
     Toolbar mToolbar;
@@ -106,17 +110,34 @@ public class SettingsActivity extends AppCompatActivity {
         Log.e(TAG, "onResume: " + getIntent().getAction());
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE) {
+            boolean canDraw = CompatUtils.canDrawOverlays(this);
+            mOverlaySwitch.setChecked(canDraw);
+            mPrefs.edit().putBoolean(OVERLAY_ENABLED, canDraw).apply();
+        }
+    }
+
     @OnCheckedChanged(R.id.overlay_button)
     void overlayToggled(boolean checked) {
         Intent intent = new Intent(this, OverlayService.class);
-        mPrefs.edit().putBoolean(OVERLAY_ENABLED, checked).apply();
         if (checked) {
             if (CompatUtils.canDrawOverlays(this)) {
+                mPrefs.edit().putBoolean(OVERLAY_ENABLED, true).apply();
                 startService(intent);
             } else {
-                //TODO: ask for permission
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                    Intent askIntent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+                    startActivityForResult(askIntent, ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE);
+                } else {
+                    Toast.makeText(this, R.string.unexptected_behaviour, Toast.LENGTH_LONG).show();
+                    mOverlaySwitch.setChecked(false);
+                    mPrefs.edit().putBoolean(OVERLAY_ENABLED, false).apply();
+                }
             }
         } else {
+            mPrefs.edit().putBoolean(OVERLAY_ENABLED, false).apply();
             stopService(intent);
         }
     }
