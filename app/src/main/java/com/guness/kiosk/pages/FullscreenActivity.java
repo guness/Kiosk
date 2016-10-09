@@ -1,10 +1,16 @@
 package com.guness.kiosk.pages;
 
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -13,24 +19,44 @@ import android.widget.Toast;
 
 import com.guness.kiosk.R;
 import com.guness.kiosk.services.BackgroundService;
+import com.guness.kiosk.services.CardReaderService;
 import com.guness.kiosk.services.OverlayService;
+
+import java.lang.ref.WeakReference;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class FullscreenActivity extends AppCompatActivity {
+import static com.guness.kiosk.pages.SettingsActivity.CARD_READER_ENABLED;
+import static com.guness.kiosk.pages.SettingsActivity.OVERLAY_ENABLED;
+import static com.guness.kiosk.pages.SettingsActivity.SETUP_COMPLETED;
+import static com.guness.kiosk.pages.SettingsActivity.SYSTEM_BARS_HIDDEN;
+
+public class FullscreenActivity extends AppCompatActivity implements ServiceConnection {
 
     private static final String APP_METATRADER4 = "net.metaquotes.metatrader4";
 
     private static final int UI_ANIMATION_DELAY = 300;
-    private final Handler mHideHandler = new Handler();
+    private static final int ACTION_SETTINGS = 1001;
 
     @BindView(R.id.fullscreen_content)
     View mContentView;
 
     @BindView(R.id.fullscreen_content_controls)
     View mControlsView;
+
+    @BindView(R.id.settings)
+    View mSettingsButton;
+
+    private Messenger mService = null;
+
+    boolean mBound;
+
+    private final Handler mHideHandler = new Handler();
+    private final Runnable mHideRunnable = this::hide;
+
+    private SharedPreferences mPrefs;
 
     private final Runnable mHidePart2Runnable = new Runnable() {
         @SuppressLint("InlinedApi")
@@ -50,32 +76,23 @@ public class FullscreenActivity extends AppCompatActivity {
         }
     };
 
-    private final Runnable mHideRunnable = this::hide;
-
-    private SharedPreferences mPrefs;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        setContentView(R.layout.activity_fullscreen);
+        ButterKnife.bind(this);
         mPrefs = getSharedPreferences(null, MODE_PRIVATE);
 
-        if (mPrefs.getBoolean(SettingsActivity.SETUP_COMPLETED, false)) {
-            setContentView(R.layout.activity_fullscreen);
-            ButterKnife.bind(this);
+        // Set up the user interaction to manually show or hide the system UI.
+        mContentView.setOnClickListener(view -> hide());
 
-            // Set up the user interaction to manually show or hide the system UI.
-            mContentView.setOnClickListener(view -> hide());
+        View decorView = getWindow().getDecorView();
+        // Hide the status bar.
+        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+        decorView.setSystemUiVisibility(uiOptions);
 
-            View decorView = getWindow().getDecorView();
-// Hide the status bar.
-            int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-            decorView.setSystemUiVisibility(uiOptions);
+        delayedHide(100);
 
-            delayedHide(100);
-        } else {
-            startActivity(new Intent(this, SettingsActivity.class));
-        }
         startService(new Intent(this, BackgroundService.class));
     }
 
@@ -83,18 +100,55 @@ public class FullscreenActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         stopService(new Intent(this, OverlayService.class));
+        if (mPrefs.getBoolean(SettingsActivity.CARD_READER_ENABLED, false)) {
+            bindService(new Intent(this, CardReaderService.class), this, BIND_AUTO_CREATE);
+        } else {
+            if (mBound) {
+                Message msg = Message.obtain(null, CardReaderService.MSG_BYE, 0, 0);
+                try {
+                    mService.send(msg);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+                unbindService(this);
+            }
+        }
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        if (!mPrefs.getBoolean(SETUP_COMPLETED, false)) {
+            new Handler().postDelayed(() -> startActivityForResult(new Intent(FullscreenActivity.this, SettingsActivity.class), ACTION_SETTINGS), 100);
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (mPrefs.getBoolean(SettingsActivity.OVERLAY_ENABLED, false)) {
+        if (mPrefs.getBoolean(OVERLAY_ENABLED, false)) {
             startService(new Intent(this, OverlayService.class));
         }
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == ACTION_SETTINGS && resultCode == RESULT_OK) {
+            mPrefs.edit().putBoolean(SETUP_COMPLETED, data.getBooleanExtra(SETUP_COMPLETED, false))
+                    .putBoolean(OVERLAY_ENABLED, data.getBooleanExtra(OVERLAY_ENABLED, false))
+                    .putBoolean(CARD_READER_ENABLED, data.getBooleanExtra(CARD_READER_ENABLED, false))
+                    .putBoolean(SYSTEM_BARS_HIDDEN, data.getBooleanExtra(SYSTEM_BARS_HIDDEN, false)).apply();
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
     public void onBackPressed() {
+    }
+
+    @OnClick(R.id.settings)
+    void onSettingsClicked() {
+        startActivityForResult(new Intent(FullscreenActivity.this, SettingsActivity.class), ACTION_SETTINGS);
     }
 
     @OnClick({R.id.button, R.id.button2, R.id.button3, R.id.button4})
@@ -154,5 +208,40 @@ public class FullscreenActivity extends AppCompatActivity {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        mService = new Messenger(service);
+        mBound = true;
+        Message msg = Message.obtain(null, CardReaderService.MSG_SAY_HELLO, 0, 0);
+        msg.replyTo = new Messenger(new MessangerHandler(this));
+        try {
+            mService.send(msg);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+        mService = null;
+        mBound = false;
+    }
+
+    static class MessangerHandler extends Handler {
+        private final WeakReference<FullscreenActivity> activityRef;
+
+        MessangerHandler(FullscreenActivity activity) {
+            activityRef = new WeakReference<>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                default:
+                    super.handleMessage(msg);
+            }
+        }
     }
 }

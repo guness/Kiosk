@@ -6,13 +6,20 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 
 import com.acs.smartcard.Reader;
+
+import java.lang.ref.WeakReference;
+import java.util.HashSet;
+import java.util.Set;
 
 public class CardReaderService extends Service {
 
@@ -31,10 +38,54 @@ public class CardReaderService extends Service {
     public CardReaderService() {
     }
 
+
+    public static final int MSG_SAY_HELLO = 1;
+    public static final int MSG_BYE = 2;
+
+    static class MessangerHandler extends Handler {
+        private final WeakReference<CardReaderService> serviceRef;
+        private Set<Messenger> outboundMessangers;
+
+        MessangerHandler(CardReaderService service) {
+            serviceRef = new WeakReference<>(service);
+            outboundMessangers = new HashSet<>();
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_SAY_HELLO:
+                    if (msg.replyTo != null) {
+                        outboundMessangers.add(msg.replyTo);
+                    }
+                    break;
+                case MSG_BYE:
+                    if (msg.replyTo != null) {
+                        outboundMessangers.remove(msg.replyTo);
+                    }
+                    break;
+                default:
+                    super.handleMessage(msg);
+            }
+        }
+
+        void sendReplay(Message message) {
+            for (Messenger messenger : outboundMessangers) {
+                try {
+                    messenger.send(message);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private final MessangerHandler mMessangerHandler = new MessangerHandler(this);
+    private final Messenger mMessenger = new Messenger(mMessangerHandler);
+
     @Override
     public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");
+        return mMessenger.getBinder();
     }
 
 

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- These values are also in build.gradle file -->
+    <usb-device
+        product-id="8704"
+        vendor-id="1839" />
+</resources>

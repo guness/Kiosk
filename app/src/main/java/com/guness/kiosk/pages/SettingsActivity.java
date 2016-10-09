@@ -13,6 +13,8 @@ import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -28,6 +30,8 @@ import butterknife.OnCheckedChanged;
 public class SettingsActivity extends AppCompatActivity {
 
     private static final String TAG = SettingsActivity.class.getSimpleName();
+
+    public static boolean isOnScreen;
 
     public static final String ACTION_USB_PERMISSION = "com.guness.kiosk.USB_PERMISSION";
 
@@ -57,7 +61,7 @@ public class SettingsActivity extends AppCompatActivity {
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.e(TAG, "onReceive: " + intent.getAction());
+            Log.d(TAG, "onReceive: " + intent.getAction());
             if (ACTION_USB_PERMISSION.equals(intent.getAction())) {
                 boolean enabled = intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false);
                 mReaderSwitch.setChecked(enabled);
@@ -73,7 +77,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.e(TAG, "onCreate: " + getIntent().getAction());
+        Log.d(TAG, "onCreate: " + getIntent().getAction());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
         ButterKnife.bind(this);
@@ -96,18 +100,43 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        isOnScreen = true;
+        Log.d(TAG, "onResume: " + getIntent().getAction());
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
-        Log.e(TAG, "onPause");
+        Log.d(TAG, "onPause");
+        isOnScreen = false;
         if (isFinishing()) {
             unregisterReceiver(mReceiver);
         }
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        Log.e(TAG, "onResume: " + getIntent().getAction());
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.settings, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_done:
+                if (mPrefs.edit().putBoolean(SETUP_COMPLETED, true).commit()) {
+                    setResult(RESULT_OK, new Intent()
+                            .putExtra(SETUP_COMPLETED, true)
+                            .putExtra(OVERLAY_ENABLED, mPrefs.getBoolean(OVERLAY_ENABLED, false))
+                            .putExtra(CARD_READER_ENABLED, mPrefs.getBoolean(CARD_READER_ENABLED, false))
+                            .putExtra(SYSTEM_BARS_HIDDEN, mPrefs.getBoolean(SYSTEM_BARS_HIDDEN, false)));
+                    finish();
+                }
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -144,24 +173,24 @@ public class SettingsActivity extends AppCompatActivity {
 
     @OnCheckedChanged(R.id.card_reader)
     void cardReaderToggled(boolean checked) {
-        Log.e(TAG, "cardReaderToggled: " + checked);
+        Log.d(TAG, "cardReaderToggled: " + checked);
         if (checked) {
             UsbDevice usbDevice = DeviceUtils.getConnectedReader(mUsbManager);
             if (usbDevice == null) {
                 mReaderSwitch.setChecked(false);
-                Log.e(TAG, "setChecked: " + false);
+                Log.d(TAG, "setChecked: " + false);
                 mPrefs.edit().putBoolean(CARD_READER_ENABLED, false).apply();
             } else {
                 if (mUsbManager.hasPermission(usbDevice)) {
-                    Log.e(TAG, "setChecked: " + true);
+                    Log.d(TAG, "setChecked: " + true);
                     mPrefs.edit().putBoolean(CARD_READER_ENABLED, true).apply();
                 } else {
-                    Log.e(TAG, "setChecked: asked");
+                    Log.d(TAG, "setChecked: asked");
                     mUsbManager.requestPermission(usbDevice, mPermissionIntent);
                 }
             }
         } else {
-            Log.e(TAG, "setChecked: " + false);
+            Log.d(TAG, "setChecked: " + false);
             mPrefs.edit().putBoolean(CARD_READER_ENABLED, false).apply();
         }
     }

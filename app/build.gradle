@@ -35,6 +35,7 @@ android {
     }
     productFlavors {
         ACR122U {
+            // These values are also in xml/device_filter file
             buildConfigField 'int', 'READER_VENDOR_ID', '1839'
             buildConfigField 'int', 'READER_PRODUCT_ID', '8704'
         }

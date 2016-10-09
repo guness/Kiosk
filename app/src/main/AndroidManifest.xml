@@ -37,6 +37,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".pages.SettingsActivity" />
+        <activity android:name=".pages.DeviceDetachedActivity" />
 
         <receiver
             android:name=".receivers.BootReceiver"
@@ -47,6 +48,17 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
                 <action android:name="android.intent.action.REBOOT" />
             </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".receivers.DetachReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_DETACHED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_DETACHED"
+                android:resource="@xml/device_filter" />
         </receiver>
 
         <service
