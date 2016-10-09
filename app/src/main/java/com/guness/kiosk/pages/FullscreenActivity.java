@@ -2,6 +2,7 @@ package com.guness.kiosk.pages;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.ActionBar;
@@ -49,28 +50,22 @@ public class FullscreenActivity extends AppCompatActivity {
         }
     };
 
-    private final Runnable mHideRunnable = new Runnable() {
-        @Override
-        public void run() {
-            hide();
-        }
-    };
+    private final Runnable mHideRunnable = this::hide;
+
+    private SharedPreferences mPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getSharedPreferences(null, MODE_PRIVATE).getBoolean(SetupActivity.SETUP_COMPLETED, false)) {
+        mPrefs = getSharedPreferences(null, MODE_PRIVATE);
+
+        if (mPrefs.getBoolean(SettingsActivity.SETUP_COMPLETED, false)) {
             setContentView(R.layout.activity_fullscreen);
             ButterKnife.bind(this);
 
             // Set up the user interaction to manually show or hide the system UI.
-            mContentView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    hide();
-                }
-            });
+            mContentView.setOnClickListener(view -> hide());
 
             View decorView = getWindow().getDecorView();
 // Hide the status bar.
@@ -79,7 +74,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
             delayedHide(100);
         } else {
-            startActivity(new Intent(this, SetupActivity.class));
+            startActivity(new Intent(this, SettingsActivity.class));
         }
         startService(new Intent(this, BackgroundService.class));
     }
@@ -87,13 +82,15 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // stopService(new Intent(this, OverlayService.class));
+        stopService(new Intent(this, OverlayService.class));
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        startService(new Intent(this, OverlayService.class));
+        if (mPrefs.getBoolean(SettingsActivity.OVERLAY_ENABLED, false)) {
+            startService(new Intent(this, OverlayService.class));
+        }
     }
 
     @Override

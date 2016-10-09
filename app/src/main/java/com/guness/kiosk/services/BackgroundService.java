@@ -29,15 +29,12 @@ public class BackgroundService extends Service {
 
     @Override
     public void onCreate() {
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Log.d(TAG, "Executing init");
-                try {
-                    Log.d(TAG, "Result: " + RootUtils.run(true, "setprop service.adb.tcp.port 5555", "stop adbd", "start adbd", "getprop service.adb.tcp.port"));
-                } catch (IllegalAccessException e) {
-                    Log.e(TAG, "adb over TCP failed", e);
-                }
+        new Handler().postDelayed(() -> {
+            Log.d(TAG, "Executing init");
+            try {
+                Log.d(TAG, "Result: " + RootUtils.run(true, "setprop service.adb.tcp.port 5555", "stop adbd", "start adbd", "getprop service.adb.tcp.port"));
+            } catch (IllegalAccessException e) {
+                Log.e(TAG, "adb over TCP failed", e);
             }
         }, 10000);
 

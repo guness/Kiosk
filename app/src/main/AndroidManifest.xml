@@ -6,6 +6,9 @@
     <uses-permission android:name="android.permission.ACCESS_SUPERUSER" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
+    <uses-permission android:name="android.permission.USB_PERMISSION" />
+
+    <uses-feature android:name="android.hardware.usb.host" />
 
     <application
         android:name=".core.KioskApplication"
@@ -33,8 +36,7 @@
                 <category android:name="android.intent.category.MONKEY" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".pages.SetupActivity" />
+        <activity android:name=".pages.SettingsActivity" />
 
         <receiver
             android:name=".receivers.BootReceiver"
@@ -53,7 +55,9 @@
         <service
             android:name=".services.OverlayService"
             android:enabled="true" />
-
+        <service
+            android:name=".services.CardReaderService"
+            android:enabled="true" />
     </application>
 
 </manifest>

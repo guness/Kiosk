@@ -43,23 +43,14 @@ public class OverlayService extends Service implements View.OnTouchListener {
                     WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                             | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
-                            | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
                             | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                     PixelFormat.TRANSLUCENT);
             wm = (WindowManager) getSystemService(WINDOW_SERVICE);
             wm.addView(oView, params);
-            oView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Log.e(TAG, "onClick");
-                }
-            });
-            oView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View view) {
-                    oView.setOnTouchListener(OverlayService.this);
-                    return true;
-                }
+            oView.setOnClickListener(view -> Log.e(TAG, "onClick"));
+            oView.setOnLongClickListener(view -> {
+                oView.setOnTouchListener(OverlayService.this);
+                return true;
             });
 
         } else {

@@ -4,10 +4,12 @@
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="title_activity_main">MainActivity</string>
-    <string name="title_activity_setup">SetupActivity</string>
-    <string name="action_settings">Settings</string>
-    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="overlay_button">Overlay Button</string>
+    <string name="card_reader">Card Reader</string>
+    <string name="hide_system_bars">Hide System Bars</string>
+    <string name="overlay_explanation">Overlay button may require user permission on new devices.</string>
+    <string name="card_reader_explanation">Card Reader device must be connected before enabling.</string>
+    <string name="system_bar_explanation">Hiding system bars requires root abilities. Device will reboot upon saving.</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
