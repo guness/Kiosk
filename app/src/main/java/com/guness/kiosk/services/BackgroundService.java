@@ -3,6 +3,7 @@ package com.guness.kiosk.services;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.text.TextUtils;
@@ -31,11 +32,18 @@ public class BackgroundService extends Service {
     public void onCreate() {
         new Handler().postDelayed(() -> {
             Log.d(TAG, "Executing init");
-            try {
-                Log.d(TAG, "Result: " + RootUtils.run(true, "setprop service.adb.tcp.port 5555", "stop adbd", "start adbd", "getprop service.adb.tcp.port"));
-            } catch (IllegalAccessException e) {
-                Log.e(TAG, "adb over TCP failed", e);
-            }
+            new AsyncTask<Void, Void, Void>() {
+
+                @Override
+                protected Void doInBackground(Void... params) {
+                    try {
+                        Log.d(TAG, "Result: " + RootUtils.run(true, "setprop service.adb.tcp.port 5555", "stop adbd", "start adbd", "getprop service.adb.tcp.port"));
+                    } catch (IllegalAccessException e) {
+                        Log.e(TAG, "adb over TCP failed", e);
+                    }
+                    return null;
+                }
+            }.execute();
         }, 10000);
 
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);

@@ -11,6 +11,7 @@ import com.guness.kiosk.pages.SettingsActivity;
 import com.guness.kiosk.utils.DeviceUtils;
 
 import static android.content.Context.USB_SERVICE;
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 public class DetachReceiver extends BroadcastReceiver {
     public DetachReceiver() {
@@ -23,7 +24,7 @@ public class DetachReceiver extends BroadcastReceiver {
                 UsbManager usbManager = (UsbManager) context.getSystemService(USB_SERVICE);
                 UsbDevice usbDevice = DeviceUtils.getConnectedReader(usbManager);
                 if (usbDevice == null) {
-                    context.startActivity(new Intent(context, DeviceDetachedActivity.class));
+                    context.startActivity(new Intent(context, DeviceDetachedActivity.class).addFlags(FLAG_ACTIVITY_NEW_TASK));
                 }
             }
         }

@@ -17,14 +17,16 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".pages.MainActivity" />
+        <activity
+            android:name=".pages.MainActivity"
+            android:screenOrientation="landscape" />
         <activity
             android:name=".pages.FullscreenActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:excludeFromRecents="true"
             android:label="@string/app_name"
             android:launchMode="singleInstance"
-            android:process=":Launcher"
+            android:screenOrientation="landscape"
             android:stateNotNeeded="true"
             android:theme="@style/FullscreenTheme">
             <intent-filter>
@@ -36,8 +38,12 @@
                 <category android:name="android.intent.category.MONKEY" />
             </intent-filter>
         </activity>
-        <activity android:name=".pages.SettingsActivity" />
-        <activity android:name=".pages.DeviceDetachedActivity" />
+        <activity
+            android:name=".pages.SettingsActivity"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".pages.DeviceDetachedActivity"
+            android:screenOrientation="landscape" />
 
         <receiver
             android:name=".receivers.BootReceiver"

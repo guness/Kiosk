@@ -1,6 +1,5 @@
 package com.guness.kiosk.pages;
 
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -8,20 +7,25 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
 
 import com.guness.kiosk.R;
+import com.guness.kiosk.services.CardReaderService;
 import com.guness.kiosk.services.OverlayService;
 import com.guness.kiosk.utils.CompatUtils;
 import com.guness.kiosk.utils.DeviceUtils;
+import com.guness.kiosk.utils.RootUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -57,19 +61,15 @@ public class SettingsActivity extends AppCompatActivity {
     SharedPreferences mPrefs;
 
     private UsbManager mUsbManager;
-    private PendingIntent mPermissionIntent;
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "onReceive: " + intent.getAction());
-            if (ACTION_USB_PERMISSION.equals(intent.getAction())) {
-                boolean enabled = intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false);
-                mReaderSwitch.setChecked(enabled);
-                mPrefs.edit().putBoolean(CARD_READER_ENABLED, enabled).apply();
-            } else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(intent.getAction())) {
+            if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(intent.getAction())) {
                 UsbDevice usbDevice = DeviceUtils.getConnectedReader(mUsbManager);
                 if (usbDevice == null) {
                     mReaderSwitch.setChecked(false);
+                    mPrefs.edit().putBoolean(CARD_READER_ENABLED, false).apply();
                 }
             }
         }
@@ -86,8 +86,6 @@ public class SettingsActivity extends AppCompatActivity {
         mUsbManager = (UsbManager) getSystemService(USB_SERVICE);
 
         mPrefs = getSharedPreferences(null, MODE_PRIVATE);
-
-        mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
 
         mOverlaySwitch.setChecked(mPrefs.getBoolean(OVERLAY_ENABLED, false));
         mReaderSwitch.setChecked(mPrefs.getBoolean(CARD_READER_ENABLED, false));
@@ -111,9 +109,12 @@ public class SettingsActivity extends AppCompatActivity {
         super.onPause();
         Log.d(TAG, "onPause");
         isOnScreen = false;
-        if (isFinishing()) {
-            unregisterReceiver(mReceiver);
-        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(mReceiver);
     }
 
     @Override
@@ -126,17 +127,15 @@ public class SettingsActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_done:
-                if (mPrefs.edit().putBoolean(SETUP_COMPLETED, true).commit()) {
-                    setResult(RESULT_OK, new Intent()
-                            .putExtra(SETUP_COMPLETED, true)
-                            .putExtra(OVERLAY_ENABLED, mPrefs.getBoolean(OVERLAY_ENABLED, false))
-                            .putExtra(CARD_READER_ENABLED, mPrefs.getBoolean(CARD_READER_ENABLED, false))
-                            .putExtra(SYSTEM_BARS_HIDDEN, mPrefs.getBoolean(SYSTEM_BARS_HIDDEN, false)));
-                    finish();
-                }
+                mPrefs.edit().putBoolean(SETUP_COMPLETED, true).apply();
+                finish();
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
     }
 
     @Override
@@ -174,29 +173,64 @@ public class SettingsActivity extends AppCompatActivity {
     @OnCheckedChanged(R.id.card_reader)
     void cardReaderToggled(boolean checked) {
         Log.d(TAG, "cardReaderToggled: " + checked);
+        Intent intent = new Intent(this, CardReaderService.class);
         if (checked) {
             UsbDevice usbDevice = DeviceUtils.getConnectedReader(mUsbManager);
             if (usbDevice == null) {
                 mReaderSwitch.setChecked(false);
                 Log.d(TAG, "setChecked: " + false);
-                mPrefs.edit().putBoolean(CARD_READER_ENABLED, false).apply();
             } else {
-                if (mUsbManager.hasPermission(usbDevice)) {
-                    Log.d(TAG, "setChecked: " + true);
-                    mPrefs.edit().putBoolean(CARD_READER_ENABLED, true).apply();
-                } else {
-                    Log.d(TAG, "setChecked: asked");
-                    mUsbManager.requestPermission(usbDevice, mPermissionIntent);
-                }
+                mPrefs.edit().putBoolean(CARD_READER_ENABLED, true).apply();
+                startService(intent);
+                return;
             }
         } else {
             Log.d(TAG, "setChecked: " + false);
-            mPrefs.edit().putBoolean(CARD_READER_ENABLED, false).apply();
         }
+        mPrefs.edit().putBoolean(CARD_READER_ENABLED, false).apply();
+        stopService(intent);
     }
 
     @OnCheckedChanged(R.id.hide_bars)
-    void hideBarsToggled(boolean checked) {
-        //UsbConstants
+    void hideBarsToggled(CompoundButton switchButton, boolean checked) {
+        new AsyncTask<Void, Void, Boolean>() {
+
+            @Override
+            protected void onPreExecute() {
+                switchButton.setEnabled(false);
+            }
+
+            @Override
+            protected Boolean doInBackground(Void... params) {
+                try {
+                    RootUtils.run(true, "pm " + (checked ? "disable" : "enable") + " com.android.systemui");
+                    //And probably this: "pm " + (checked ? "enable" : "disable") + " com.android.launcher3"
+                    return true;
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                if (aBoolean) {
+                    mPrefs.edit().putBoolean(SYSTEM_BARS_HIDDEN, checked).apply();
+                    new AlertDialog.Builder(SettingsActivity.this).setTitle(R.string.restart).setMessage(R.string.restart_needed)
+                            .setPositiveButton(R.string.restart, (dialog, which) -> {
+                                try {
+                                    RootUtils.run(true, "reboot");
+                                } catch (IllegalAccessException e) {
+                                    Toast.makeText(SettingsActivity.this, R.string.manual_reboot_required, Toast.LENGTH_SHORT).show();
+                                    e.printStackTrace();
+                                }
+                            }).setNegativeButton(R.string.restart_later, null).show();
+                } else {
+                    Toast.makeText(SettingsActivity.this, R.string.root_required, Toast.LENGTH_SHORT).show();
+                    switchButton.setChecked(!checked);
+                }
+                switchButton.setEnabled(true);
+            }
+        }.execute();
     }
 }

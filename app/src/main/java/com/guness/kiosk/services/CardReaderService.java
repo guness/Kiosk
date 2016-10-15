@@ -8,18 +8,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
 import android.util.Log;
 
 import com.acs.smartcard.Reader;
-
-import java.lang.ref.WeakReference;
-import java.util.HashSet;
-import java.util.Set;
+import com.guness.kiosk.utils.DeviceUtils;
 
 public class CardReaderService extends Service {
 
@@ -38,54 +31,9 @@ public class CardReaderService extends Service {
     public CardReaderService() {
     }
 
-
-    public static final int MSG_SAY_HELLO = 1;
-    public static final int MSG_BYE = 2;
-
-    static class MessangerHandler extends Handler {
-        private final WeakReference<CardReaderService> serviceRef;
-        private Set<Messenger> outboundMessangers;
-
-        MessangerHandler(CardReaderService service) {
-            serviceRef = new WeakReference<>(service);
-            outboundMessangers = new HashSet<>();
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case MSG_SAY_HELLO:
-                    if (msg.replyTo != null) {
-                        outboundMessangers.add(msg.replyTo);
-                    }
-                    break;
-                case MSG_BYE:
-                    if (msg.replyTo != null) {
-                        outboundMessangers.remove(msg.replyTo);
-                    }
-                    break;
-                default:
-                    super.handleMessage(msg);
-            }
-        }
-
-        void sendReplay(Message message) {
-            for (Messenger messenger : outboundMessangers) {
-                try {
-                    messenger.send(message);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    private final MessangerHandler mMessangerHandler = new MessangerHandler(this);
-    private final Messenger mMessenger = new Messenger(mMessangerHandler);
-
     @Override
     public IBinder onBind(Intent intent) {
-        return mMessenger.getBinder();
+        return null;
     }
 
 
@@ -120,10 +68,21 @@ public class CardReaderService extends Service {
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
         registerReceiver(mUsbReceiver, filter);
+
+        UsbDevice device = DeviceUtils.getConnectedReader(mUsbManager);
+        mUsbManager.requestPermission(device, mPermissionIntent);
     }
 
     @Override
     public void onDestroy() {
+        UsbDevice device = DeviceUtils.getConnectedReader(mUsbManager);
+        if (device != null && device.equals(mReader.getDevice())) {
+            try {
+                mReader.close();
+            } catch (Exception e) {
+                Log.e(TAG, "Error while closing device", e);
+            }
+        }
         unregisterReceiver(mUsbReceiver);
     }
 
@@ -156,18 +115,6 @@ public class CardReaderService extends Service {
                     }
                 }
 
-            } else if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
-
-                synchronized (this) {
-                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-                        if (device != null) {
-                            openDevice(device);
-                        }
-                    } else {
-                        mUsbManager.requestPermission(device, mPermissionIntent);
-                        Log.e(TAG, "Permission requested for device");
-                    }
-                }
             } else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
 
                 synchronized (this) {
@@ -178,6 +125,11 @@ public class CardReaderService extends Service {
                             Log.e(TAG, "Error while closing device", e);
                         }
                     }
+                }
+            } else if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
+
+                synchronized (this) {
+
                 }
             }
         }
