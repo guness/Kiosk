@@ -12,6 +12,7 @@ import android.util.Log;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.FirebaseDatabase;
 import com.guness.kiosk.models.Command;
 import com.guness.kiosk.utils.RootUtils;
@@ -86,7 +87,12 @@ public class BackgroundService extends Service {
     }
 
     private void consumeCommand(final DataSnapshot dataSnapshot) {
-        final Command command = dataSnapshot.getValue(Command.class);
+        Command command = null;
+        try {
+            command = dataSnapshot.getValue(Command.class);
+        } catch (DatabaseException e) {
+            Log.e(TAG, "Could not consume a command");
+        }
         if (command != null) {
             if (!command.isExecuted) {
                 Log.e(TAG, "Consuming command: '" + command.command + "'");

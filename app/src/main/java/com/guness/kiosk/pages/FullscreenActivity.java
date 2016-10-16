@@ -35,13 +35,9 @@ public class FullscreenActivity extends AppCompatActivity {
     private static final String APP_METATRADER4 = "net.metaquotes.metatrader4";
 
     private static final int UI_ANIMATION_DELAY = 300;
-    private static final int ACTION_SETTINGS = 1001;
 
-    @BindView(R.id.fullscreen_content)
+    @BindView(R.id.content)
     View mContentView;
-
-    @BindView(R.id.fullscreen_content_controls)
-    View mControlsView;
 
     @BindView(R.id.settings)
     View mSettingsButton;
@@ -114,7 +110,7 @@ public class FullscreenActivity extends AppCompatActivity {
     protected void onPostResume() {
         super.onPostResume();
         if (!mPrefs.getBoolean(SETUP_COMPLETED, false)) {
-            onSettingsClicked();
+            //onSettingsClicked();
         }
     }
 
@@ -138,24 +134,27 @@ public class FullscreenActivity extends AppCompatActivity {
         startActivity(new Intent(FullscreenActivity.this, SettingsActivity.class));
     }
 
-    @OnClick({R.id.button, R.id.button2, R.id.button3, R.id.button4})
+    @OnClick({R.id.trade, R.id.news, R.id.bonus, R.id.jackpot, R.id.faq})
     void onButtonClicked(View view) {
         String text = null;
+        Intent webActivity = new Intent(this, WebActivity.class);
         switch (view.getId()) {
-            case R.id.button:
+            case R.id.trade:
                 if (!launchApplication(APP_METATRADER4)) {
                     text = "Cannot find selected application.";
                 }
                 break;
-            case R.id.button2:
-                startActivity(new Intent(this, MainActivity.class));
-                text = "Button 2";
+            case R.id.news:
+                startActivity(webActivity.putExtra(WebActivity.EXTRA_URL, getString(R.string.url_news)));
                 break;
-            case R.id.button3:
-                text = "Button 3";
+            case R.id.bonus:
+                startActivity(webActivity.putExtra(WebActivity.EXTRA_URL, getString(R.string.url_bonus)));
                 break;
-            case R.id.button4:
-                text = "Button 3";
+            case R.id.jackpot:
+                startActivity(webActivity.putExtra(WebActivity.EXTRA_URL, getString(R.string.url_jackpot)));
+                break;
+            case R.id.faq:
+                startActivity(webActivity.putExtra(WebActivity.EXTRA_URL, getString(R.string.url_faq)));
                 break;
         }
         if (!TextUtils.isEmpty(text)) {

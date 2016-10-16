@@ -1,103 +1,95 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/launcher_background"
+    android:background="@drawable/background"
     tools:context=".pages.FullscreenActivity">
 
-    <!-- The primary full-screen view. This can be replaced with whatever view
-         is needed to present your content, e.g. VideoView, SurfaceView,
-         TextureView, etc. -->
-    <RelativeLayout
-        android:id="@+id/fullscreen_content"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:keepScreenOn="true">
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal">
 
-    </RelativeLayout>
-
-    <!-- This FrameLayout insets its children based on system windows using
-         android:fitsSystemWindows. -->
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fitsSystemWindows="true">
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="0.9" />
 
         <ImageView
-            android:id="@+id/settings"
-            android:layout_width="wrap_content"
+            android:id="@+id/trade"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="top|end"
-            android:layout_marginEnd="@dimen/fab_margin"
-            android:layout_marginTop="@dimen/fab_margin"
-            app:srcCompat="@drawable/ic_select_all_white_24dp" />
+            android:layout_marginBottom="140dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            app:srcCompat="@drawable/trade" />
 
-        <RelativeLayout
-            android:id="@+id/fullscreen_content_controls"
-            android:layout_width="wrap_content"
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="0.9" />
+
+        <ImageView
+            android:id="@+id/news"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
-            android:paddingBottom="@dimen/launcher_button_size"
-            tools:ignore="UselessParent">
+            android:layout_marginBottom="140dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            app:srcCompat="@drawable/news" />
 
-            <LinearLayout
-                style="?metaButtonBarStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@color/black_overlay"
-                android:divider="?android:dividerVertical"
-                android:dividerPadding="8dp"
-                android:orientation="horizontal"
-                android:showDividers="middle"
-                tools:ignore="UselessParent">
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="0.9" />
 
-                <Button
-                    android:id="@+id/button"
-                    style="?metaButtonBarStyle"
-                    android:layout_width="@dimen/launcher_button_size"
-                    android:layout_height="@dimen/launcher_button_size"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    android:text="New Button"
-                    android:textAllCaps="true"
-                    android:textColor="@color/white_overlay" />
+        <ImageView
+            android:id="@+id/bonus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="140dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            app:srcCompat="@drawable/bonus" />
 
-                <Button
-                    android:id="@+id/button2"
-                    style="?metaButtonBarStyle"
-                    android:layout_width="@dimen/launcher_button_size"
-                    android:layout_height="@dimen/launcher_button_size"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    android:text="New Button"
-                    android:textAllCaps="true"
-                    android:textColor="@color/white_overlay" />
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="0.9" />
 
-                <Button
-                    android:id="@+id/button3"
-                    style="?metaButtonBarStyle"
-                    android:layout_width="@dimen/launcher_button_size"
-                    android:layout_height="@dimen/launcher_button_size"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    android:text="New Button"
-                    android:textAllCaps="true"
-                    android:textColor="@color/white_overlay" />
+        <ImageView
+            android:id="@+id/jackpot"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="140dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            app:srcCompat="@drawable/jackpot" />
 
-                <Button
-                    android:id="@+id/button4"
-                    style="?metaButtonBarStyle"
-                    android:layout_width="@dimen/launcher_button_size"
-                    android:layout_height="@dimen/launcher_button_size"
-                    android:paddingLeft="20dp"
-                    android:paddingRight="20dp"
-                    android:text="New Button"
-                    android:textAllCaps="true"
-                    android:textColor="@color/white_overlay" />
-            </LinearLayout>
-        </RelativeLayout>
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="0.9" />
+    </LinearLayout>
 
-    </FrameLayout>
+    <ImageView
+        android:id="@+id/faq"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="120dp"
+        app:srcCompat="@drawable/faq" />
 
-</FrameLayout>
+    <ImageView
+        android:id="@+id/settings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="30dp"
+        app:srcCompat="@drawable/ic_select_all_white_24dp" />
+
+</RelativeLayout>

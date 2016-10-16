@@ -138,6 +138,9 @@ public class CardReaderService extends Service {
     private void openDevice(UsbDevice device) {
         try {
             mReader.open(device);
+            mReader.setOnStateChangeListener((slotNum, prevState, currState) -> {
+                Log.e(TAG, "slotNum: " + slotNum + " prevState: " + prevState + " currState: " + currState);
+            });
         } catch (Exception e) {
             Log.e(TAG, "Error while opening device", e);
         }
