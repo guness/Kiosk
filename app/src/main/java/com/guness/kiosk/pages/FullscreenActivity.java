@@ -31,6 +31,8 @@ import static com.guness.kiosk.pages.SettingsActivity.SETUP_COMPLETED;
 public class FullscreenActivity extends AppCompatActivity {
 
     private static final String TAG = FullscreenActivity.class.getSimpleName();
+    public static final String ACTION_ONRESUME = "FullscreenActivity_onResume";
+    public static final String ACTION_ONPAUSE = "FullscreenActivity_onPause";
 
     private static final String APP_METATRADER4 = "net.metaquotes.metatrader4";
 
@@ -98,12 +100,17 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        stopService(new Intent(this, OverlayService.class));
         if (mPrefs.getBoolean(SettingsActivity.CARD_READER_ENABLED, false)) {
             startService(new Intent(this, CardReaderService.class));
         } else {
             stopService(new Intent(this, CardReaderService.class));
         }
+        if (mPrefs.getBoolean(OVERLAY_ENABLED, false)) {
+            startService(new Intent(this, OverlayService.class));
+        } else {
+            stopService(new Intent(this, OverlayService.class));
+        }
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_ONRESUME));
     }
 
     @Override
@@ -117,9 +124,7 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (mPrefs.getBoolean(OVERLAY_ENABLED, false)) {
-            startService(new Intent(this, OverlayService.class));
-        }
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_ONPAUSE));
         if (isFinishing()) {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
         }

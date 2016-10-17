@@ -1,4 +1,4 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.percent.PercentRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/content"
@@ -9,78 +9,76 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:orientation="horizontal">
+        android:gravity="top"
+        android:orientation="horizontal"
+        app:layout_heightPercent="36%">
 
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="0.9" />
+            android:layout_weight="29" />
 
         <ImageView
             android:id="@+id/trade"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="140dp"
-            android:layout_weight="1"
+            android:layout_weight="44"
             android:adjustViewBounds="true"
             app:srcCompat="@drawable/trade" />
 
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="0.9" />
+            android:layout_weight="34" />
 
         <ImageView
             android:id="@+id/news"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="140dp"
-            android:layout_weight="1"
+            android:layout_weight="44"
             android:adjustViewBounds="true"
             app:srcCompat="@drawable/news" />
 
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="0.9" />
+            android:layout_weight="34" />
 
         <ImageView
             android:id="@+id/bonus"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="140dp"
-            android:layout_weight="1"
+            android:layout_weight="44"
             android:adjustViewBounds="true"
             app:srcCompat="@drawable/bonus" />
 
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="0.9" />
+            android:layout_weight="34" />
 
         <ImageView
             android:id="@+id/jackpot"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="140dp"
-            android:layout_weight="1"
+            android:layout_weight="44"
             android:adjustViewBounds="true"
             app:srcCompat="@drawable/jackpot" />
 
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="0.9" />
+            android:layout_weight="29" />
     </LinearLayout>
 
     <ImageView
         android:id="@+id/faq"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_marginEnd="120dp"
+        android:adjustViewBounds="true"
+        app:layout_marginEndPercent="3%"
+        app:layout_widthPercent="10%"
         app:srcCompat="@drawable/faq" />
 
     <ImageView
@@ -92,4 +90,4 @@
         android:layout_margin="30dp"
         app:srcCompat="@drawable/ic_select_all_white_24dp" />
 
-</RelativeLayout>
+</android.support.percent.PercentRelativeLayout>

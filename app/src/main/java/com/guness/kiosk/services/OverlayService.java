@@ -1,28 +1,44 @@
 package com.guness.kiosk.services;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.PixelFormat;
-import android.graphics.drawable.ColorDrawable;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.view.MotionEvent;
-import android.view.View;
+import android.view.Gravity;
 import android.view.WindowManager;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
 
+import com.guness.kiosk.R;
+import com.guness.kiosk.pages.FullscreenActivity;
 import com.guness.kiosk.utils.CompatUtils;
 
-public class OverlayService extends Service implements View.OnTouchListener {
+public class OverlayService extends Service {
 
     private static final String TAG = OverlayService.class.getSimpleName();
 
-    private View oView;
-    private WindowManager.LayoutParams params;
-    private WindowManager wm;
 
-    float pX, pY;
-    float tmp = Float.MAX_VALUE;
+    private ImageView oView;
+
+    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (oView != null) {
+                switch (intent.getAction()) {
+                    case FullscreenActivity.ACTION_ONRESUME:
+                        oView.setImageResource(R.drawable.t1);
+                        break;
+                    case FullscreenActivity.ACTION_ONPAUSE:
+                        oView.setImageResource(R.drawable.t2);
+                        break;
+                }
+            }
+        }
+    };
 
     public OverlayService() {
     }
@@ -35,24 +51,25 @@ public class OverlayService extends Service implements View.OnTouchListener {
     @Override
     public void onCreate() {
         if (CompatUtils.canDrawOverlays(this)) {
-            oView = new LinearLayout(this);
-            oView.setBackground(new ColorDrawable(0x2F000000));
-            params = new WindowManager.LayoutParams(
-                    200,
-                    200,
+            oView = new ImageView(this);
+            oView.setImageResource(R.drawable.t1);
+            WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                    300,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
                     WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                             | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
                             | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                     PixelFormat.TRANSLUCENT);
-            wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+            params.gravity = Gravity.START | Gravity.TOP;
+            WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+            oView.setPadding(50, 50, 50, 50);
             wm.addView(oView, params);
             oView.setOnClickListener(view -> Log.e(TAG, "onClick"));
-            oView.setOnLongClickListener(view -> {
-                oView.setOnTouchListener(OverlayService.this);
-                return true;
-            });
-
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(FullscreenActivity.ACTION_ONPAUSE);
+            filter.addAction(FullscreenActivity.ACTION_ONRESUME);
+            LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver, filter);
         } else {
             stopSelf();
         }
@@ -61,40 +78,10 @@ public class OverlayService extends Service implements View.OnTouchListener {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
         if (oView != null) {
             WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
             wm.removeView(oView);
         }
-    }
-
-    @Override
-    public boolean onTouch(View view, MotionEvent event) {
-
-        switch (event.getAction()) {
-
-            case MotionEvent.ACTION_MOVE:
-                if (tmp == Float.MAX_VALUE) {
-                    pX = event.getRawX();
-                    pY = event.getRawY();
-                    tmp = 0;
-                } else {
-                    tmp = pX;
-                    pX = event.getRawX();
-                    params.x += pX - tmp;
-                    tmp = pY;
-                    pY = event.getRawY();
-                    params.y += pY - tmp;
-                    //TODO: limit params such that overlay should not go out of screen
-                    wm.updateViewLayout(oView, params);
-                }
-                break;
-            case MotionEvent.ACTION_UP:
-                oView.setOnTouchListener(null);
-                tmp = Float.MAX_VALUE;
-                break;
-            default:
-                return false;
-        }
-        return true;
     }
 }
