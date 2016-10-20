@@ -70,7 +70,9 @@ public class CardReaderService extends Service {
         registerReceiver(mUsbReceiver, filter);
 
         UsbDevice device = DeviceUtils.getConnectedReader(mUsbManager);
-        mUsbManager.requestPermission(device, mPermissionIntent);
+        if (device != null) {
+            mUsbManager.requestPermission(device, mPermissionIntent);
+        }
     }
 
     @Override
@@ -129,7 +131,9 @@ public class CardReaderService extends Service {
             } else if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
 
                 synchronized (this) {
-
+                    if (device != null) {
+                        mUsbManager.requestPermission(device, mPermissionIntent);
+                    }
                 }
             }
         }

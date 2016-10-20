@@ -19,5 +19,7 @@
     <string name="restart_later">Restart Later</string>
     <string name="root_required">Root is required</string>
     <string name="manual_reboot_required">Could not reboot, manual reboot is required</string>
+    <string name="ok">OK</string>
+    <string name="connect_cardreader">Card reader is disconnected. Please connect it first and then press OK</string>
 
 </resources>

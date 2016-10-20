@@ -85,8 +85,8 @@
         android:id="@+id/settings"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
         android:layout_margin="30dp"
         app:srcCompat="@drawable/ic_select_all_white_24dp" />
 
