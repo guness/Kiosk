@@ -28,6 +28,7 @@
             android:launchMode="singleInstance"
             android:screenOrientation="landscape"
             android:stateNotNeeded="true"
+            android:taskAffinity="com.yourpackage.YourActivity"
             android:theme="@style/FullscreenTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

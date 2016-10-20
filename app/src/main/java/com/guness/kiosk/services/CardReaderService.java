@@ -12,7 +12,13 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.acs.smartcard.Reader;
+import com.acs.smartcard.ReaderException;
 import com.guness.kiosk.utils.DeviceUtils;
+import com.guness.kiosk.utils.RootUtils;
+
+import java.util.Arrays;
+
+import static com.guness.kiosk.core.Constants.COMMAND_CLEAR_META;
 
 public class CardReaderService extends Service {
 
@@ -121,6 +127,7 @@ public class CardReaderService extends Service {
 
                 synchronized (this) {
                     if (device != null && device.equals(mReader.getDevice())) {
+                        clearMetaTraderCache();
                         try {
                             mReader.close();
                         } catch (Exception e) {
@@ -143,10 +150,37 @@ public class CardReaderService extends Service {
         try {
             mReader.open(device);
             mReader.setOnStateChangeListener((slotNum, prevState, currState) -> {
-                Log.e(TAG, "slotNum: " + slotNum + " prevState: " + prevState + " currState: " + currState);
+                if (currState == Reader.CARD_ABSENT) {
+                    clearMetaTraderCache();
+                } else if (currState == Reader.CARD_PRESENT) {
+// Transmit APDU
+                    byte[] command = {(byte) 0xFF, (byte) 0xCA, (byte) 0x00, (byte) 0x00, (byte) 0x00};
+                    byte[] response = new byte[100];
+                    int responseLength = 0;
+
+                    try {
+                        mReader.power(slotNum, Reader.CARD_WARM_RESET);
+                        mReader.setProtocol(slotNum, Reader.PROTOCOL_T0 | Reader.PROTOCOL_T1);
+                        responseLength = mReader.transmit(0, command, command.length, response, response.length);
+                    } catch (ReaderException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    Log.e(TAG, "responseLength: " + responseLength);
+                    Log.e(TAG, "response: " + Arrays.toString(response));
+                }
             });
         } catch (Exception e) {
             Log.e(TAG, "Error while opening device", e);
+        }
+    }
+
+    private void clearMetaTraderCache() {
+        try {
+            Log.e(TAG, "Clearing MetaCache: " + RootUtils.run(true, COMMAND_CLEAR_META));
+        } catch (IllegalAccessException e) {
+            Log.e(TAG, "Clearing MetaCache Failed", e);
+            e.printStackTrace();
         }
     }
 }

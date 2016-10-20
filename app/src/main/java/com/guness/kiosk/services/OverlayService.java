@@ -10,6 +10,7 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
@@ -17,7 +18,7 @@ import com.guness.kiosk.R;
 import com.guness.kiosk.pages.FullscreenActivity;
 import com.guness.kiosk.utils.CompatUtils;
 
-public class OverlayService extends Service {
+public class OverlayService extends Service implements View.OnClickListener {
 
     private static final String TAG = OverlayService.class.getSimpleName();
 
@@ -31,9 +32,11 @@ public class OverlayService extends Service {
                 switch (intent.getAction()) {
                     case FullscreenActivity.ACTION_ONRESUME:
                         oView.setImageResource(R.drawable.t1);
+                        oView.setEnabled(false);
                         break;
                     case FullscreenActivity.ACTION_ONPAUSE:
                         oView.setImageResource(R.drawable.t2);
+                        oView.setEnabled(true);
                         break;
                 }
             }
@@ -53,6 +56,7 @@ public class OverlayService extends Service {
         if (CompatUtils.canDrawOverlays(this)) {
             oView = new ImageView(this);
             oView.setImageResource(R.drawable.t1);
+            oView.setOnClickListener(this);
             WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                     300,
                     WindowManager.LayoutParams.WRAP_CONTENT,
@@ -83,5 +87,11 @@ public class OverlayService extends Service {
             WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
             wm.removeView(oView);
         }
+    }
+
+    @Override
+    public void onClick(View v) {
+        Log.e(TAG, "onClick");
+        startActivity(new Intent(this, FullscreenActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_FROM_BACKGROUND));
     }
 }
