@@ -1,24 +1,31 @@
 package com.guness.kiosk.services;
 
+import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.hardware.usb.IUsbManager;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.IBinder;
+import android.os.Process;
+import android.os.RemoteException;
+import android.os.ServiceManager;
 import android.util.Log;
 
 import com.acs.smartcard.Reader;
 import com.acs.smartcard.ReaderException;
+import com.guness.kiosk.BuildConfig;
+import com.guness.kiosk.core.Constants;
+import com.guness.kiosk.receivers.AttachReceiver;
 import com.guness.kiosk.utils.DeviceUtils;
 import com.guness.kiosk.utils.RootUtils;
 
 import java.util.Arrays;
-
-import static com.guness.kiosk.core.Constants.COMMAND_CLEAR_META;
+import java.util.List;
 
 public class CardReaderService extends Service {
 
@@ -59,10 +66,26 @@ public class CardReaderService extends Service {
                 currState = Reader.CARD_UNKNOWN;
             }
 
-            // Create output string
-            final String outputString = "Slot " + slotNum + ": " + stateStrings[prevState] + " -> " + stateStrings[currState];
+            Log.e(TAG, "Slot " + slotNum + ": " + stateStrings[prevState] + " -> " + stateStrings[currState]);
 
-            Log.d(TAG, outputString);
+            if (currState == Reader.CARD_ABSENT) {
+                killMetaTrader(CardReaderService.this);
+            } else if (currState == Reader.CARD_PRESENT) {
+
+                byte[] command = {(byte) 0xFF, (byte) 0xCA, (byte) 0x00, (byte) 0x00, (byte) 0x08};
+                byte[] response = new byte[20];
+                int responseLength = 0;
+
+                try {
+                    mReader.power(slotNum, Reader.CARD_WARM_RESET);
+                    mReader.setProtocol(slotNum, Reader.PROTOCOL_T0 | Reader.PROTOCOL_T1);
+                    responseLength = mReader.transmit(slotNum, command, command.length, response, response.length);
+                } catch (ReaderException e) {
+                    e.printStackTrace();
+                }
+                Log.e(TAG, "responseLength: " + responseLength);
+                Log.e(TAG, "response: " + Arrays.toString(response));
+            }
 
         });
 
@@ -72,7 +95,6 @@ public class CardReaderService extends Service {
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_USB_PERMISSION);
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
         registerReceiver(mUsbReceiver, filter);
 
         UsbDevice device = DeviceUtils.getConnectedReader(mUsbManager);
@@ -97,6 +119,10 @@ public class CardReaderService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.e(TAG, "onStartCommand");
+        UsbDevice device = DeviceUtils.getConnectedReader(mUsbManager);
+        if (device != null) {
+            mUsbManager.requestPermission(device, mPermissionIntent);
+        }
         return START_STICKY;
     }
 
@@ -115,6 +141,7 @@ public class CardReaderService extends Service {
 
                 synchronized (this) {
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        Log.e(TAG, "EXTRA_PERMISSION_GRANTED");
                         if (device != null) {
                             openDevice(device);
                         }
@@ -127,19 +154,12 @@ public class CardReaderService extends Service {
 
                 synchronized (this) {
                     if (device != null && device.equals(mReader.getDevice())) {
-                        clearMetaTraderCache();
+                        killMetaTrader(context);
                         try {
                             mReader.close();
                         } catch (Exception e) {
                             Log.e(TAG, "Error while closing device", e);
                         }
-                    }
-                }
-            } else if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
-
-                synchronized (this) {
-                    if (device != null) {
-                        mUsbManager.requestPermission(device, mPermissionIntent);
                     }
                 }
             }
@@ -148,39 +168,44 @@ public class CardReaderService extends Service {
 
     private void openDevice(UsbDevice device) {
         try {
+            Log.e(TAG, "openDevice");
             mReader.open(device);
-            mReader.setOnStateChangeListener((slotNum, prevState, currState) -> {
-                if (currState == Reader.CARD_ABSENT) {
-                    clearMetaTraderCache();
-                } else if (currState == Reader.CARD_PRESENT) {
-// Transmit APDU
-                    byte[] command = {(byte) 0xFF, (byte) 0xCA, (byte) 0x00, (byte) 0x00, (byte) 0x00};
-                    byte[] response = new byte[100];
-                    int responseLength = 0;
-
-                    try {
-                        mReader.power(slotNum, Reader.CARD_WARM_RESET);
-                        mReader.setProtocol(slotNum, Reader.PROTOCOL_T0 | Reader.PROTOCOL_T1);
-                        responseLength = mReader.transmit(0, command, command.length, response, response.length);
-                    } catch (ReaderException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                    Log.e(TAG, "responseLength: " + responseLength);
-                    Log.e(TAG, "response: " + Arrays.toString(response));
-                }
-            });
         } catch (Exception e) {
             Log.e(TAG, "Error while opening device", e);
         }
     }
 
-    private void clearMetaTraderCache() {
+    public static void killMetaTrader(Context context) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> activities = manager.getRunningAppProcesses();
+        for (int iCnt = 0; iCnt < activities.size(); iCnt++) {
+            ActivityManager.RunningAppProcessInfo info = activities.get(iCnt);
+            if (info.processName.contains(Constants.META_PACKAGE)) {
+                try {
+                    Log.e(TAG, "Killing Meta: " + RootUtils.run(true, "kill -9 " + info.pid));
+                } catch (Exception e) {
+                    Log.e(TAG, "MetaKilling Failed", e);
+                    e.printStackTrace();
+                }
+            }
+        }
+        clearMetaCache();
+    }
+
+    public static void clearMetaCache() {
         try {
-            Log.e(TAG, "Clearing MetaCache: " + RootUtils.run(true, COMMAND_CLEAR_META));
+            Log.e(TAG, "Clearing MetaCache");
+            Log.e(TAG, "Result: " + RootUtils.run(true, Constants.Commands.COMMANDS_CLEAR_META));
         } catch (IllegalAccessException e) {
-            Log.e(TAG, "Clearing MetaCache Failed", e);
+            Log.e(TAG, "Could not clear MetaCache", e);
             e.printStackTrace();
         }
+    }
+
+    public static void grantUsbPermission(UsbDevice usbDevice) throws RemoteException {
+        IBinder b = ServiceManager.getService(USB_SERVICE);
+        IUsbManager service = IUsbManager.Stub.asInterface(b);
+        service.setDevicePackage(usbDevice, BuildConfig.APPLICATION_ID, Process.myUid());
+        service.grantDevicePermission(usbDevice, Process.myUid());
     }
 }

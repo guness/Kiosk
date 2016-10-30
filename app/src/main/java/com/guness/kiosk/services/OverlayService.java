@@ -8,9 +8,7 @@ import android.content.IntentFilter;
 import android.graphics.PixelFormat;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import android.view.Gravity;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
@@ -18,10 +16,9 @@ import com.guness.kiosk.R;
 import com.guness.kiosk.pages.FullscreenActivity;
 import com.guness.kiosk.utils.CompatUtils;
 
-public class OverlayService extends Service implements View.OnClickListener {
+public class OverlayService extends Service {
 
     private static final String TAG = OverlayService.class.getSimpleName();
-
 
     private ImageView oView;
 
@@ -56,7 +53,6 @@ public class OverlayService extends Service implements View.OnClickListener {
         if (CompatUtils.canDrawOverlays(this)) {
             oView = new ImageView(this);
             oView.setImageResource(R.drawable.t1);
-            oView.setOnClickListener(this);
             WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                     300,
                     WindowManager.LayoutParams.WRAP_CONTENT,
@@ -69,7 +65,11 @@ public class OverlayService extends Service implements View.OnClickListener {
             WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
             oView.setPadding(50, 50, 50, 50);
             wm.addView(oView, params);
-            oView.setOnClickListener(view -> Log.e(TAG, "onClick"));
+            oView.setOnClickListener(view -> startActivity(
+                    new Intent(OverlayService.this, FullscreenActivity.class)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)));
             IntentFilter filter = new IntentFilter();
             filter.addAction(FullscreenActivity.ACTION_ONPAUSE);
             filter.addAction(FullscreenActivity.ACTION_ONRESUME);
@@ -87,11 +87,5 @@ public class OverlayService extends Service implements View.OnClickListener {
             WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
             wm.removeView(oView);
         }
-    }
-
-    @Override
-    public void onClick(View v) {
-        Log.e(TAG, "onClick");
-        startActivity(new Intent(this, FullscreenActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_FROM_BACKGROUND));
     }
 }

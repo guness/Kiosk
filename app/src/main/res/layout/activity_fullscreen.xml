@@ -25,6 +25,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="44"
             android:adjustViewBounds="true"
+            android:contentDescription="@string/trade"
             app:srcCompat="@drawable/trade" />
 
         <View
@@ -38,6 +39,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="44"
             android:adjustViewBounds="true"
+            android:contentDescription="@string/news"
             app:srcCompat="@drawable/news" />
 
         <View
@@ -51,6 +53,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="44"
             android:adjustViewBounds="true"
+            android:contentDescription="@string/bonus"
             app:srcCompat="@drawable/bonus" />
 
         <View
@@ -64,6 +67,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="44"
             android:adjustViewBounds="true"
+            android:contentDescription="@string/jackpot"
             app:srcCompat="@drawable/jackpot" />
 
         <View
@@ -77,6 +81,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:adjustViewBounds="true"
+        android:contentDescription="@string/faq"
         app:layout_marginEndPercent="3%"
         app:layout_widthPercent="10%"
         app:srcCompat="@drawable/faq" />
@@ -87,7 +92,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        android:layout_margin="30dp"
+        android:layout_marginBottom="230dp"
         app:srcCompat="@drawable/ic_select_all_white_24dp" />
 
 </android.support.percent.PercentRelativeLayout>
