@@ -9,8 +9,8 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_alignParentBottom="true"
-        android:gravity="top"
+        android:layout_alignParentTop="true"
+        android:gravity="bottom"
         android:orientation="horizontal"
         app:layout_heightPercent="36%">
 
@@ -79,11 +79,13 @@
     <ImageView
         android:id="@+id/faq"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
         android:adjustViewBounds="true"
         android:contentDescription="@string/faq"
-        app:layout_marginEndPercent="3%"
-        app:layout_widthPercent="10%"
+        app:layout_marginBottomPercent="6%"
+        app:layout_marginStartPercent="5%"
+        app:layout_widthPercent="9%"
         app:srcCompat="@drawable/faq" />
 
     <ImageView

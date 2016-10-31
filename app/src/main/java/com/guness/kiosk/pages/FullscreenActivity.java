@@ -14,12 +14,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.guness.kiosk.R;
 import com.guness.kiosk.receivers.BootReceiver;
 import com.guness.kiosk.services.CardReaderService;
 import com.guness.kiosk.services.OverlayService;
+import com.guness.kiosk.utils.GlowingTask;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -44,8 +46,25 @@ public class FullscreenActivity extends AppCompatActivity {
     @BindView(R.id.settings)
     View mSettingsButton;
 
+    @BindView(R.id.trade)
+    ImageView mTrade;
+
+    @BindView(R.id.news)
+    ImageView mNews;
+
+    @BindView(R.id.bonus)
+    ImageView mBonus;
+
+    @BindView(R.id.jackpot)
+    ImageView mJackpot;
+
+    @BindView(R.id.faq)
+    ImageView mFaq;
+
     private final Handler mHideHandler = new Handler();
     private final Runnable mHideRunnable = this::hide;
+
+    private GlowingTask mGlowingTask;
 
     private SharedPreferences mPrefs;
 
@@ -111,6 +130,8 @@ public class FullscreenActivity extends AppCompatActivity {
             stopService(new Intent(this, OverlayService.class));
         }
         LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_ONRESUME));
+        mGlowingTask = new GlowingTask(this, mBonus, mFaq, mJackpot, mNews, mTrade);
+        mGlowingTask.execute();
     }
 
     @Override
@@ -124,6 +145,8 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        mGlowingTask.stop();
+        mGlowingTask = null;
         LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_ONPAUSE));
         if (isFinishing()) {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);

@@ -61,7 +61,7 @@ public class OverlayService extends Service {
                             | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
                             | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                     PixelFormat.TRANSLUCENT);
-            params.gravity = Gravity.START | Gravity.TOP;
+            params.gravity = Gravity.END | Gravity.BOTTOM;
             WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
             oView.setPadding(50, 50, 50, 50);
             wm.addView(oView, params);
