@@ -35,6 +35,7 @@ public class FullscreenActivity extends AppCompatActivity {
     private static final String TAG = FullscreenActivity.class.getSimpleName();
     public static final String ACTION_ONRESUME = "FullscreenActivity_onResume";
     public static final String ACTION_ONPAUSE = "FullscreenActivity_onPause";
+    public static final String ACTION_ONMETA = "FullscreenActivity_onMeta";
 
     private static final String APP_METATRADER4 = "net.metaquotes.metatrader4";
 
@@ -168,7 +169,9 @@ public class FullscreenActivity extends AppCompatActivity {
         Intent webActivity = new Intent(this, WebActivity.class);
         switch (view.getId()) {
             case R.id.trade:
-                if (!launchApplication(APP_METATRADER4)) {
+                if (launchApplication(APP_METATRADER4)) {
+                    LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_ONMETA));
+                } else {
                     text = "Cannot find selected application.";
                 }
                 break;

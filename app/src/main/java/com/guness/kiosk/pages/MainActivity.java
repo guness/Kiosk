@@ -8,7 +8,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import com.guness.kiosk.R;
-import com.guness.kiosk.utils.RootUtils;
+
+import eu.chainfire.libsuperuser.Shell;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,15 +27,10 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String message;
-                try {
-                    message = RootUtils.run(true, "ls -al");
-                } catch (IllegalAccessException e) {
-                    message = e.getMessage();
-                }
+
                 new AlertDialog.Builder(MainActivity.this)
-                        .setTitle("ls -al")
-                        .setMessage(message)
+                        .setTitle("Root Available?")
+                        .setMessage("available: " + Shell.SU.available())
                         .setPositiveButton(android.R.string.ok, null)
                         .show();
             }

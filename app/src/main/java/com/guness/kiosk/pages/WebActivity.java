@@ -1,6 +1,11 @@
 package com.guness.kiosk.pages;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.webkit.WebChromeClient;
@@ -9,6 +14,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.guness.kiosk.R;
+import com.guness.kiosk.services.OverlayService;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -23,6 +29,14 @@ public class WebActivity extends AppCompatActivity {
 
     @BindView(R.id.webView)
     WebView mWebView;
+
+
+    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            finish();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,5 +57,16 @@ public class WebActivity extends AppCompatActivity {
         mWebView.setWebChromeClient(new WebChromeClient());
         mWebView.setWebViewClient(new WebViewClient());
         mWebView.loadUrl(mUrl);
+        mWebView.reload();
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver, new IntentFilter(OverlayService.ACTION_ONCLICK));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (isFinishing()) {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
+        }
     }
 }

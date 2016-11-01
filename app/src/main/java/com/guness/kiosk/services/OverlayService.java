@@ -20,6 +20,8 @@ public class OverlayService extends Service {
 
     private static final String TAG = OverlayService.class.getSimpleName();
 
+    public static final String ACTION_ONCLICK = "OverlayService_onClick";
+
     private ImageView oView;
 
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
@@ -31,8 +33,10 @@ public class OverlayService extends Service {
                         oView.setImageResource(R.drawable.t1);
                         oView.setEnabled(false);
                         break;
-                    case FullscreenActivity.ACTION_ONPAUSE:
+                    case FullscreenActivity.ACTION_ONMETA:
                         oView.setImageResource(R.drawable.t2);
+                        break;
+                    case FullscreenActivity.ACTION_ONPAUSE:
                         oView.setEnabled(true);
                         break;
                 }
@@ -65,14 +69,20 @@ public class OverlayService extends Service {
             WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
             oView.setPadding(50, 50, 50, 50);
             wm.addView(oView, params);
-            oView.setOnClickListener(view -> startActivity(
-                    new Intent(OverlayService.this, FullscreenActivity.class)
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)));
+            oView.setOnClickListener(view -> {
+                LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_ONCLICK));
+                startActivity(
+                        new Intent(OverlayService.this, FullscreenActivity.class)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                );
+            });
+            oView.setEnabled(false);
             IntentFilter filter = new IntentFilter();
             filter.addAction(FullscreenActivity.ACTION_ONPAUSE);
             filter.addAction(FullscreenActivity.ACTION_ONRESUME);
+            filter.addAction(FullscreenActivity.ACTION_ONMETA);
             LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver, filter);
         } else {
             stopSelf();

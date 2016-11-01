@@ -28,19 +28,17 @@ public class GlowingTask extends AsyncTask<Void, Boolean, Void> {
     private static TransitionDrawable[] mTransitions;
 
     private volatile boolean isPlay;
-    private ImageView mImages[];
 
     @UiThread
     public GlowingTask(Context context, ImageView... imageViews) {
         isPlay = true;
-        mImages = imageViews;
-        mTransitions = new TransitionDrawable[mImages.length];
-        for (int i = 0; i < mImages.length; i++) {
+        mTransitions = new TransitionDrawable[imageViews.length];
+        for (int i = 0; i < imageViews.length; i++) {
             Drawable[] layers = new Drawable[2];
             layers[0] = ContextCompat.getDrawable(context, GLOW_RES[i]);
             layers[1] = ContextCompat.getDrawable(context, NORMAL_RES[i]);
             mTransitions[i] = new TransitionDrawable(layers);
-            mImages[i].setImageDrawable(mTransitions[i]);
+            imageViews[i].setImageDrawable(mTransitions[i]);
         }
     }
 

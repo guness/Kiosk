@@ -20,12 +20,12 @@ import com.acs.smartcard.Reader;
 import com.acs.smartcard.ReaderException;
 import com.guness.kiosk.BuildConfig;
 import com.guness.kiosk.core.Constants;
-import com.guness.kiosk.receivers.AttachReceiver;
 import com.guness.kiosk.utils.DeviceUtils;
-import com.guness.kiosk.utils.RootUtils;
 
 import java.util.Arrays;
 import java.util.List;
+
+import eu.chainfire.libsuperuser.Shell;
 
 public class CardReaderService extends Service {
 
@@ -181,11 +181,14 @@ public class CardReaderService extends Service {
         for (int iCnt = 0; iCnt < activities.size(); iCnt++) {
             ActivityManager.RunningAppProcessInfo info = activities.get(iCnt);
             if (info.processName.contains(Constants.META_PACKAGE)) {
-                try {
-                    Log.e(TAG, "Killing Meta: " + RootUtils.run(true, "kill -9 " + info.pid));
-                } catch (Exception e) {
-                    Log.e(TAG, "MetaKilling Failed", e);
-                    e.printStackTrace();
+
+                List<String> result = Shell.SU.run("kill -9 " + info.pid);
+                if (result == null) {
+                    Log.e(TAG, "MetaKilling Failed");
+                } else {
+                    for (String message : result) {
+                        Log.d(TAG, "Result: " + message);
+                    }
                 }
             }
         }
@@ -193,12 +196,14 @@ public class CardReaderService extends Service {
     }
 
     public static void clearMetaCache() {
-        try {
-            Log.e(TAG, "Clearing MetaCache");
-            Log.e(TAG, "Result: " + RootUtils.run(true, Constants.Commands.COMMANDS_CLEAR_META));
-        } catch (IllegalAccessException e) {
-            Log.e(TAG, "Could not clear MetaCache", e);
-            e.printStackTrace();
+        Log.e(TAG, "Clearing MetaCache");
+        List<String> result = Shell.SU.run(Constants.Commands.COMMANDS_CLEAR_META);
+        if (result == null) {
+            Log.e(TAG, "Could not clear MetaCache");
+        } else {
+            for (String message : result) {
+                Log.d(TAG, "Result: " + message);
+            }
         }
     }
 

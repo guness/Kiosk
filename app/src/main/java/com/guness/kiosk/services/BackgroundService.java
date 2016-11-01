@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
@@ -15,7 +14,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.FirebaseDatabase;
 import com.guness.kiosk.models.Command;
-import com.guness.kiosk.utils.RootUtils;
+
+import java.util.List;
+
+import eu.chainfire.libsuperuser.Shell;
 
 public class BackgroundService extends Service {
 
@@ -31,21 +33,30 @@ public class BackgroundService extends Service {
 
     @Override
     public void onCreate() {
-        new Handler().postDelayed(() -> {
-            Log.d(TAG, "Executing init");
-            new AsyncTask<Void, Void, Void>() {
-
-                @Override
-                protected Void doInBackground(Void... params) {
+        Log.d(TAG, "onCreate");
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                Log.d(TAG, "Starting init");
+                synchronized (this) {
                     try {
-                        Log.d(TAG, "Result: " + RootUtils.run(true, "setprop service.adb.tcp.port 5555", "stop adbd", "start adbd", "getprop service.adb.tcp.port"));
-                    } catch (IllegalAccessException e) {
-                        Log.e(TAG, "adb over TCP failed", e);
+                        wait(10000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    return null;
                 }
-            }.execute();
-        }, 10000);
+                Log.d(TAG, "Executing init on background");
+                List<String> result = Shell.SU.run(new String[]{"setprop service.adb.tcp.port 5555", "stop adbd", "start adbd", "getprop service.adb.tcp.port"});
+                if (result == null) {
+                    Log.e(TAG, "adb over TCP failed");
+                } else {
+                    for (String message : result) {
+                        Log.d(TAG, "adb over TCP: " + message);
+                    }
+                }
+                return null;
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         SharedPreferences prefs = getSharedPreferences(null, MODE_PRIVATE);
@@ -97,15 +108,18 @@ public class BackgroundService extends Service {
             if (!command.isExecuted) {
                 Log.e(TAG, "Consuming command: '" + command.command + "'");
                 dataSnapshot.getRef().child("isExecuted").setValue(true);
-                String result;
-                try {
-                    result = RootUtils.run(command.asRoot, command.command);
-                    Log.e(TAG, "Command consumed, result: [" + result + "]");
-                } catch (IllegalAccessException e) {
-                    Log.e(TAG, "Command failed: '" + command.command + "'", e);
-                    dataSnapshot.getRef().child("isFailed").setValue(true);
-                    result = e.getMessage();
+                List<String> result;
+
+                if (command.asRoot) {
+                    result = Shell.SU.run(command.command);
+                } else {
+                    result = Shell.SH.run(command.command);
                 }
+
+                if (result == null) {
+                    dataSnapshot.getRef().child("isFailed").setValue(true);
+                }
+
                 dataSnapshot.getRef().child("result").setValue(result);
             }
         }

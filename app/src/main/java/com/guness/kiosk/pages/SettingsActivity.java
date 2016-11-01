@@ -25,11 +25,13 @@ import com.guness.kiosk.services.CardReaderService;
 import com.guness.kiosk.services.OverlayService;
 import com.guness.kiosk.utils.CompatUtils;
 import com.guness.kiosk.utils.DeviceUtils;
-import com.guness.kiosk.utils.RootUtils;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnCheckedChanged;
+import eu.chainfire.libsuperuser.Shell;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -60,6 +62,8 @@ public class SettingsActivity extends AppCompatActivity {
 
     SharedPreferences mPrefs;
 
+    private volatile boolean isSelf;
+
     private UsbManager mUsbManager;
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
@@ -87,9 +91,11 @@ public class SettingsActivity extends AppCompatActivity {
 
         mPrefs = getSharedPreferences(null, MODE_PRIVATE);
 
+        isSelf = true;
         mOverlaySwitch.setChecked(mPrefs.getBoolean(OVERLAY_ENABLED, false));
         mReaderSwitch.setChecked(mPrefs.getBoolean(CARD_READER_ENABLED, false));
         mBarSwitch.setChecked(mPrefs.getBoolean(SYSTEM_BARS_HIDDEN, false));
+        isSelf = false;
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_USB_PERMISSION);
@@ -149,6 +155,9 @@ public class SettingsActivity extends AppCompatActivity {
 
     @OnCheckedChanged(R.id.overlay_button)
     void overlayToggled(boolean checked) {
+        if (isSelf) {
+            return;
+        }
         Intent intent = new Intent(this, OverlayService.class);
         if (checked) {
             if (CompatUtils.canDrawOverlays(this)) {
@@ -172,6 +181,9 @@ public class SettingsActivity extends AppCompatActivity {
 
     @OnCheckedChanged(R.id.card_reader)
     void cardReaderToggled(boolean checked) {
+        if (isSelf) {
+            return;
+        }
         Log.d(TAG, "cardReaderToggled: " + checked);
         Intent intent = new Intent(this, CardReaderService.class);
         if (checked) {
@@ -193,6 +205,9 @@ public class SettingsActivity extends AppCompatActivity {
 
     @OnCheckedChanged(R.id.hide_bars)
     void hideBarsToggled(CompoundButton switchButton, boolean checked) {
+        if (isSelf) {
+            return;
+        }
         new AsyncTask<Void, Void, Boolean>() {
 
             @Override
@@ -202,13 +217,16 @@ public class SettingsActivity extends AppCompatActivity {
 
             @Override
             protected Boolean doInBackground(Void... params) {
-                try {
-                    RootUtils.run(true, "pm " + (checked ? "disable" : "enable") + " com.android.systemui");
-                    //And probably this: "pm " + (checked ? "enable" : "disable") + " com.android.launcher3"
-                    return true;
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                //And probably this: "pm " + (checked ? "enable" : "disable") + " com.android.launcher3"
+                String command = "pm " + (checked ? "disable" : "enable") + " com.android.systemui";
+                List<String> result = Shell.SU.run(command);
+                if (result == null) {
                     return false;
+                } else {
+                    for (String message : result) {
+                        Log.d(TAG, "Result: " + message);
+                    }
+                    return true;
                 }
             }
 
@@ -216,13 +234,12 @@ public class SettingsActivity extends AppCompatActivity {
             protected void onPostExecute(Boolean aBoolean) {
                 if (aBoolean) {
                     mPrefs.edit().putBoolean(SYSTEM_BARS_HIDDEN, checked).apply();
-                    new AlertDialog.Builder(SettingsActivity.this).setTitle(R.string.restart).setMessage(R.string.restart_needed)
+                    new AlertDialog.Builder(SettingsActivity.this)
+                            .setTitle(R.string.restart)
+                            .setMessage(R.string.restart_needed)
                             .setPositiveButton(R.string.restart, (dialog, which) -> {
-                                try {
-                                    RootUtils.run(true, "reboot");
-                                } catch (IllegalAccessException e) {
+                                if (Shell.SU.run("reboot") == null) {
                                     Toast.makeText(SettingsActivity.this, R.string.manual_reboot_required, Toast.LENGTH_SHORT).show();
-                                    e.printStackTrace();
                                 }
                             }).setNegativeButton(R.string.restart_later, null).show();
                 } else {
@@ -231,6 +248,6 @@ public class SettingsActivity extends AppCompatActivity {
                 }
                 switchButton.setEnabled(true);
             }
-        }.execute();
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 }
