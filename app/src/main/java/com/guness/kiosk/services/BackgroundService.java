@@ -46,7 +46,7 @@ public class BackgroundService extends Service {
                     }
                 }
                 Log.d(TAG, "Executing init on background");
-                List<String> result = Shell.SU.run(new String[]{"setprop service.adb.tcp.port 5555", "stop adbd", "start adbd", "getprop service.adb.tcp.port"});
+                List<String> result = Shell.SU.run(new String[]{"setprop service.adb.tcp.port 5555", "stop adbd", "start adbd", "getprop service.adb.tcp.port", "adb shell id"});
                 if (result == null) {
                     Log.e(TAG, "adb over TCP failed");
                 } else {

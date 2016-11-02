@@ -21,6 +21,7 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 import com.guness.kiosk.R;
+import com.guness.kiosk.core.Constants;
 import com.guness.kiosk.services.CardReaderService;
 import com.guness.kiosk.services.OverlayService;
 import com.guness.kiosk.utils.CompatUtils;
@@ -218,8 +219,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             protected Boolean doInBackground(Void... params) {
                 //And probably this: "pm " + (checked ? "enable" : "disable") + " com.android.launcher3"
-                String command = "pm " + (checked ? "disable" : "enable") + " com.android.systemui";
-                List<String> result = Shell.SU.run(command);
+                List<String> result = Shell.SU.run(checked ? Constants.Commands.COMMAND_DISABLE_SYSTEMUI : Constants.Commands.COMMAND_ENABLE_SYSTEMUI);
                 if (result == null) {
                     return false;
                 } else {

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.guness.kiosk">
+    package="com.guness.kiosk"
+    android:sharedUserId="android.uid.system">
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.ACCESS_SUPERUSER" />
@@ -49,10 +50,19 @@
             android:screenOrientation="landscape" />
         <activity
             android:name=".pages.DeviceDetachedActivity"
-            android:screenOrientation="landscape" />
+            android:screenOrientation="landscape"
+            android:theme="@style/FullscreenTheme" />
         <activity
             android:name=".pages.WebActivity"
-            android:screenOrientation="landscape" />
+            android:screenOrientation="landscape"
+            android:theme="@style/FullscreenTheme" />
+
+        <activity
+            android:name=".pages.ScreenSaverActivity"
+            android:launchMode="singleInstance"
+            android:noHistory="true"
+            android:screenOrientation="landscape"
+            android:theme="@style/FullscreenTheme" />
 
         <receiver
             android:name=".receivers.BootReceiver"
@@ -97,6 +107,7 @@
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
+
             <meta-data
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter" />

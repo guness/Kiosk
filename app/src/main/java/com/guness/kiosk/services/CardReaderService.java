@@ -14,12 +14,14 @@ import android.os.IBinder;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.acs.smartcard.Reader;
 import com.acs.smartcard.ReaderException;
 import com.guness.kiosk.BuildConfig;
 import com.guness.kiosk.core.Constants;
+import com.guness.kiosk.pages.ScreenSaverActivity;
 import com.guness.kiosk.utils.DeviceUtils;
 
 import java.util.Arrays;
@@ -30,6 +32,9 @@ import eu.chainfire.libsuperuser.Shell;
 public class CardReaderService extends Service {
 
     private static final String TAG = CardReaderService.class.getSimpleName();
+
+    public static final String ACTION_CARD_ATTACHED = "CardReaderService_cardAttached";
+    public static final String ACTION_CARD_DETACHED = "CardReaderService_cardDetached";
 
     private static final String ACTION_USB_PERMISSION = "com.guness.kiosk.USB_PERMISSION";
 
@@ -69,8 +74,17 @@ public class CardReaderService extends Service {
             Log.e(TAG, "Slot " + slotNum + ": " + stateStrings[prevState] + " -> " + stateStrings[currState]);
 
             if (currState == Reader.CARD_ABSENT) {
-                killMetaTrader(CardReaderService.this);
+                wipeMetaTrader();
+                LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_CARD_DETACHED));
+
+                startActivity(
+                        new Intent(this, ScreenSaverActivity.class)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                );
             } else if (currState == Reader.CARD_PRESENT) {
+                LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_CARD_ATTACHED));
 
                 byte[] command = {(byte) 0xFF, (byte) 0xCA, (byte) 0x00, (byte) 0x00, (byte) 0x08};
                 byte[] response = new byte[20];
@@ -86,7 +100,6 @@ public class CardReaderService extends Service {
                 Log.e(TAG, "responseLength: " + responseLength);
                 Log.e(TAG, "response: " + Arrays.toString(response));
             }
-
         });
 
         mUsbReceiver = new UsbReceiver();
@@ -154,7 +167,7 @@ public class CardReaderService extends Service {
 
                 synchronized (this) {
                     if (device != null && device.equals(mReader.getDevice())) {
-                        killMetaTrader(context);
+                        wipeMetaTrader();
                         try {
                             mReader.close();
                         } catch (Exception e) {
@@ -162,6 +175,17 @@ public class CardReaderService extends Service {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private void wipeMetaTrader() {
+        List<String> result = Shell.SU.run(Constants.Commands.COMMAND_WIPE_META);
+        if (result == null) {
+            Log.e(TAG, "MetaWipe Failed");
+        } else {
+            for (String message : result) {
+                Log.d(TAG, "MetaWipe: " + message);
             }
         }
     }
@@ -175,6 +199,7 @@ public class CardReaderService extends Service {
         }
     }
 
+    @Deprecated
     public static void killMetaTrader(Context context) {
         ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningAppProcessInfo> activities = manager.getRunningAppProcesses();
@@ -195,6 +220,7 @@ public class CardReaderService extends Service {
         clearMetaCache();
     }
 
+    @Deprecated
     public static void clearMetaCache() {
         Log.e(TAG, "Clearing MetaCache");
         List<String> result = Shell.SU.run(Constants.Commands.COMMANDS_CLEAR_META);
@@ -207,6 +233,7 @@ public class CardReaderService extends Service {
         }
     }
 
+    @Deprecated
     public static void grantUsbPermission(UsbDevice usbDevice) throws RemoteException {
         IBinder b = ServiceManager.getService(USB_SERVICE);
         IUsbManager service = IUsbManager.Stub.asInterface(b);
