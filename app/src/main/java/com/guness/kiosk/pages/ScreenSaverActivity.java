@@ -38,6 +38,7 @@ public class ScreenSaverActivity extends AppCompatActivity {
 
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
+        webSettings.setMediaPlaybackRequiresUserGesture(false);
         webSettings.setUseWideViewPort(true);
         webSettings.setLoadWithOverviewMode(true);
         mWebView.setWebChromeClient(new WebChromeClient());

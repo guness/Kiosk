@@ -10,6 +10,7 @@ import android.hardware.usb.UsbManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.annotation.UiThread;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -28,6 +29,7 @@ import com.guness.kiosk.utils.CompatUtils;
 import com.guness.kiosk.utils.DeviceUtils;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -63,7 +65,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     SharedPreferences mPrefs;
 
-    private volatile boolean isSelf;
+    private AtomicBoolean isSelfAtomic = new AtomicBoolean(false);
 
     private UsbManager mUsbManager;
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -73,7 +75,9 @@ public class SettingsActivity extends AppCompatActivity {
             if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(intent.getAction())) {
                 UsbDevice usbDevice = DeviceUtils.getConnectedReader(mUsbManager);
                 if (usbDevice == null) {
+                    setSelf(true);
                     mReaderSwitch.setChecked(false);
+                    setSelf(false);
                     mPrefs.edit().putBoolean(CARD_READER_ENABLED, false).apply();
                 }
             }
@@ -92,11 +96,11 @@ public class SettingsActivity extends AppCompatActivity {
 
         mPrefs = getSharedPreferences(null, MODE_PRIVATE);
 
-        isSelf = true;
+        setSelf(true);
         mOverlaySwitch.setChecked(mPrefs.getBoolean(OVERLAY_ENABLED, false));
         mReaderSwitch.setChecked(mPrefs.getBoolean(CARD_READER_ENABLED, false));
         mBarSwitch.setChecked(mPrefs.getBoolean(SYSTEM_BARS_HIDDEN, false));
-        isSelf = false;
+        setSelf(false);
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_USB_PERMISSION);
@@ -149,14 +153,16 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE) {
             boolean canDraw = CompatUtils.canDrawOverlays(this);
+            setSelf(true);
             mOverlaySwitch.setChecked(canDraw);
+            setSelf(false);
             mPrefs.edit().putBoolean(OVERLAY_ENABLED, canDraw).apply();
         }
     }
 
     @OnCheckedChanged(R.id.overlay_button)
     void overlayToggled(boolean checked) {
-        if (isSelf) {
+        if (isSelf()) {
             return;
         }
         Intent intent = new Intent(this, OverlayService.class);
@@ -170,7 +176,9 @@ public class SettingsActivity extends AppCompatActivity {
                     startActivityForResult(askIntent, ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE);
                 } else {
                     Toast.makeText(this, R.string.unexptected_behaviour, Toast.LENGTH_LONG).show();
+                    setSelf(true);
                     mOverlaySwitch.setChecked(false);
+                    setSelf(false);
                     mPrefs.edit().putBoolean(OVERLAY_ENABLED, false).apply();
                 }
             }
@@ -182,7 +190,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     @OnCheckedChanged(R.id.card_reader)
     void cardReaderToggled(boolean checked) {
-        if (isSelf) {
+        if (isSelf()) {
             return;
         }
         Log.d(TAG, "cardReaderToggled: " + checked);
@@ -190,7 +198,9 @@ public class SettingsActivity extends AppCompatActivity {
         if (checked) {
             UsbDevice usbDevice = DeviceUtils.getConnectedReader(mUsbManager);
             if (usbDevice == null) {
+                setSelf(true);
                 mReaderSwitch.setChecked(false);
+                setSelf(false);
                 Log.d(TAG, "setChecked: " + false);
             } else {
                 mPrefs.edit().putBoolean(CARD_READER_ENABLED, true).apply();
@@ -206,7 +216,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     @OnCheckedChanged(R.id.hide_bars)
     void hideBarsToggled(CompoundButton switchButton, boolean checked) {
-        if (isSelf) {
+        if (isSelf()) {
             return;
         }
         new AsyncTask<Void, Void, Boolean>() {
@@ -244,10 +254,24 @@ public class SettingsActivity extends AppCompatActivity {
                             }).setNegativeButton(R.string.restart_later, null).show();
                 } else {
                     Toast.makeText(SettingsActivity.this, R.string.root_required, Toast.LENGTH_SHORT).show();
+                    setSelf(true);
                     switchButton.setChecked(!checked);
+                    setSelf(false);
                 }
+                setSelf(true);
                 switchButton.setEnabled(true);
+                setSelf(false);
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    @UiThread
+    private boolean isSelf() {
+        return isSelfAtomic.get();
+    }
+
+    @UiThread
+    private void setSelf(boolean self) {
+        isSelfAtomic.set(self);
     }
 }

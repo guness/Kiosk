@@ -74,7 +74,7 @@ public class CardReaderService extends Service {
             Log.e(TAG, "Slot " + slotNum + ": " + stateStrings[prevState] + " -> " + stateStrings[currState]);
 
             if (currState == Reader.CARD_ABSENT) {
-                wipeMetaTrader();
+                killMetaTrader(CardReaderService.this);
                 LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_CARD_DETACHED));
 
                 startActivity(
@@ -167,7 +167,7 @@ public class CardReaderService extends Service {
 
                 synchronized (this) {
                     if (device != null && device.equals(mReader.getDevice())) {
-                        wipeMetaTrader();
+                        killMetaTrader(CardReaderService.this);
                         try {
                             mReader.close();
                         } catch (Exception e) {
@@ -179,6 +179,7 @@ public class CardReaderService extends Service {
         }
     }
 
+    @Deprecated
     private void wipeMetaTrader() {
         List<String> result = Shell.SU.run(Constants.Commands.COMMAND_WIPE_META);
         if (result == null) {
@@ -199,7 +200,7 @@ public class CardReaderService extends Service {
         }
     }
 
-    @Deprecated
+
     public static void killMetaTrader(Context context) {
         ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningAppProcessInfo> activities = manager.getRunningAppProcesses();
@@ -220,7 +221,7 @@ public class CardReaderService extends Service {
         clearMetaCache();
     }
 
-    @Deprecated
+
     public static void clearMetaCache() {
         Log.e(TAG, "Clearing MetaCache");
         List<String> result = Shell.SU.run(Constants.Commands.COMMANDS_CLEAR_META);
