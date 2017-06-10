@@ -15,8 +15,8 @@ public class Constants {
                 "rm -rf /data/data/net.metaquotes.metatrader4/files",
                 "rm -rf /data/data/net.metaquotes.metatrader4/shared_prefs"};
 
-        public static final String COMMAND_WIPE_META = "adb shell pm clear " + META_PACKAGE;
-        public static final String COMMAND_DISABLE_SYSTEMUI = "adb shell pm disable " + SYSTEMUI_PACKAGE;
-        public static final String COMMAND_ENABLE_SYSTEMUI = "adb shell pm enable " + SYSTEMUI_PACKAGE;
+        public static final String COMMAND_WIPE_META = "pm clear " + META_PACKAGE;
+        public static final String COMMAND_DISABLE_SYSTEMUI = "pm disable " + SYSTEMUI_PACKAGE;
+        public static final String COMMAND_ENABLE_SYSTEMUI = "pm enable " + SYSTEMUI_PACKAGE;
     }
 }

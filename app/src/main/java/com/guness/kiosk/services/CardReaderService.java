@@ -180,7 +180,7 @@ public class CardReaderService extends Service {
     }
 
     @Deprecated
-    private void wipeMetaTrader() {
+    private static void wipeMetaTrader() {
         List<String> result = Shell.SU.run(Constants.Commands.COMMAND_WIPE_META);
         if (result == null) {
             Log.e(TAG, "MetaWipe Failed");
@@ -218,7 +218,7 @@ public class CardReaderService extends Service {
                 }
             }
         }
-        clearMetaCache();
+        wipeMetaTrader();
     }
 
 
