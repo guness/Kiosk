@@ -2,16 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.guness.kiosk">
 
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.ACCESS_SUPERUSER" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
-    <uses-permission android:name="android.permission.CLEAR_APP_CACHE" />
-    <uses-permission android:name="android.permission.CLEAR_APP_USER_DATA" />
-    <uses-permission android:name="android.permission.DELETE_CACHE_FILES" />
-    <uses-permission android:name="android.permission.MANAGE_USB" />
     <uses-permission android:name="android.permission.USB_PERMISSION" />
-    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <uses-feature android:name="android.hardware.usb.host" />
 
@@ -45,9 +39,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".pages.SettingsActivity"
-            android:screenOrientation="landscape" />
-        <activity
             android:name=".pages.DeviceDetachedActivity"
             android:screenOrientation="landscape"
             android:theme="@style/FullscreenTheme" />
@@ -64,16 +55,6 @@
             android:theme="@style/FullscreenTheme" />
 
         <receiver
-            android:name=".receivers.BootReceiver"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
-                <action android:name="android.intent.action.REBOOT" />
-            </intent-filter>
-        </receiver>
-        <receiver
             android:name=".receivers.DetachReceiver"
             android:enabled="true"
             android:exported="false">
@@ -86,9 +67,6 @@
                 android:resource="@xml/device_filter" />
         </receiver>
 
-        <service
-            android:name=".services.BackgroundService"
-            android:enabled="true" />
         <service
             android:name=".services.OverlayService"
             android:enabled="true" />

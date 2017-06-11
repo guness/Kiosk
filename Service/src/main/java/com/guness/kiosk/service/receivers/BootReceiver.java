@@ -1,11 +1,11 @@
-package com.guness.kiosk.receivers;
+package com.guness.kiosk.service.receivers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.guness.kiosk.services.BackgroundService;
-import com.guness.kiosk.services.CardReaderService;
+import com.guness.kiosk.service.services.BackgroundService;
+
 
 public class BootReceiver extends BroadcastReceiver {
     public BootReceiver() {

@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -18,7 +17,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.guness.kiosk.R;
-import com.guness.kiosk.receivers.BootReceiver;
+import com.guness.kiosk.core.BaseActivity;
 import com.guness.kiosk.services.CardReaderService;
 import com.guness.kiosk.services.OverlayService;
 import com.guness.kiosk.utils.GlowingTask;
@@ -27,10 +26,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-import static com.guness.kiosk.pages.SettingsActivity.OVERLAY_ENABLED;
-import static com.guness.kiosk.pages.SettingsActivity.SETUP_COMPLETED;
-
-public class FullscreenActivity extends AppCompatActivity {
+public class FullscreenActivity extends BaseActivity {
 
     private static final String TAG = FullscreenActivity.class.getSimpleName();
     public static final String ACTION_ONRESUME = "FullscreenActivity_onResume";
@@ -43,9 +39,6 @@ public class FullscreenActivity extends AppCompatActivity {
 
     @BindView(R.id.content)
     View mContentView;
-
-    @BindView(R.id.settings)
-    View mSettingsButton;
 
     @BindView(R.id.trade)
     ImageView mTrade;
@@ -112,7 +105,6 @@ public class FullscreenActivity extends AppCompatActivity {
 
         delayedHide(100);
 
-        BootReceiver.startServices(this);
         IntentFilter filter = new IntentFilter("BB");
         LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver, filter);
     }
@@ -120,27 +112,13 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (mPrefs.getBoolean(SettingsActivity.CARD_READER_ENABLED, false)) {
-            startService(new Intent(this, CardReaderService.class));
-        } else {
-            stopService(new Intent(this, CardReaderService.class));
-        }
-        if (mPrefs.getBoolean(OVERLAY_ENABLED, false)) {
-            startService(new Intent(this, OverlayService.class));
-        } else {
-            stopService(new Intent(this, OverlayService.class));
-        }
+
+        startService(new Intent(this, CardReaderService.class));
+
+        startService(new Intent(this, OverlayService.class));
         LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_ONRESUME));
         mGlowingTask = new GlowingTask(this, mBonus, mFaq, mJackpot, mNews, mTrade);
         mGlowingTask.execute();
-    }
-
-    @Override
-    protected void onPostResume() {
-        super.onPostResume();
-        if (!mPrefs.getBoolean(SETUP_COMPLETED, false)) {
-            //onSettingsClicked();
-        }
     }
 
     @Override
@@ -156,11 +134,6 @@ public class FullscreenActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-    }
-
-    @OnClick(R.id.settings)
-    void onSettingsClicked() {
-        startActivity(new Intent(FullscreenActivity.this, SettingsActivity.class));
     }
 
     @OnClick({R.id.trade, R.id.news, R.id.bonus, R.id.jackpot, R.id.faq})

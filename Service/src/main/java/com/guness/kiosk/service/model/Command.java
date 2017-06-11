@@ -1,4 +1,4 @@
-package com.guness.kiosk.models;
+package com.guness.kiosk.service.model;
 
 import java.util.Arrays;
 import java.util.List;

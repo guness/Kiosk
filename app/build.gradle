@@ -1,24 +1,23 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.0"
 
     signingConfigs {
         config {
-            keyPassword 'android'
-            storeFile file('src/main/resources/platform.jks')
-            storePassword 'android'
-            keyAlias 'android'
+            keyPassword '123456'
+            storeFile file('src/main/resources/keystore.jks')
+            storePassword '123456'
+            keyAlias 'RSA'
         }
     }
     defaultConfig {
         applicationId "com.guness.kiosk"
         minSdkVersion 17
-        targetSdkVersion 25
+        targetSdkVersion 26
         versionCode 2
         versionName "1.0"
-        multiDexEnabled true
         vectorDrawables.useSupportLibrary true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         jackOptions {
@@ -54,23 +53,15 @@ android {
 }
 
 ext {
-    supportLibVersion = '25.3.0'
-    espressoVersion = '2.2.2'
-    testRunnerVersion = '0.5'
+    supportLibVersion = '26.+'
 }
 
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:1.10.19'
     androidTestCompile 'org.hamcrest:hamcrest-library:1.3'
-    androidTestCompile "com.android.support.test:runner:${testRunnerVersion}"
-    androidTestCompile "com.android.support.test:rules:${testRunnerVersion}"
-    androidTestCompile "com.android.support.test.espresso:espresso-core:${espressoVersion}"
-    androidTestCompile "com.android.support.test.espresso:espresso-contrib:${espressoVersion}"
-    androidTestCompile "com.android.support.test.espresso:espresso-intents:${espressoVersion}"
-    androidTestCompile "com.android.support.test.espresso:espresso-idling-resource:${espressoVersion}"
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
     androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.2'
 
     configurations.androidTestCompile.dependencies.each { androidTestCompileDependency ->
@@ -78,6 +69,7 @@ dependencies {
     }
 
     // Support library
+    compile "com.android.support:support-core-utils:${supportLibVersion}"
     compile "com.android.support:appcompat-v7:${supportLibVersion}"
     compile "com.android.support:support-v13:${supportLibVersion}"
     compile "com.android.support:design:${supportLibVersion}"
@@ -88,8 +80,8 @@ dependencies {
     compile "com.android.support:support-vector-drawable:${supportLibVersion}"
 
     // Butterknife
-    compile 'com.jakewharton:butterknife:8.5.1'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
+    compile 'com.jakewharton:butterknife:8.6.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
 
     // CircleImageView
     compile 'de.hdodenhof:circleimageview:2.1.0'
@@ -97,14 +89,7 @@ dependencies {
     // Glide
     compile 'com.github.bumptech.glide:glide:3.7.0'
 
-    // Firebase
-    compile 'com.google.firebase:firebase-database:10.2.0'
-
     compile 'com.android.support:multidex:1.0.1'
 
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-
-    compile 'eu.chainfire:libsuperuser:1.0.0.+'
 }
-
-apply plugin: 'com.google.gms.google-services'

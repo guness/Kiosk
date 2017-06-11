@@ -1,15 +1,10 @@
-package com.guness.kiosk.core;
+package com.guness.kiosk.service.core;
 
 /**
  * Created by guness on 20/10/2016.
  */
 
 public class Constants {
-
-    public static final String ACTION_USB_PERMISSION = "com.guness.kiosk.USB_PERMISSION";
-
-
-
     public static final String META_PACKAGE = "net.metaquotes.metatrader4";
     public static final String SYSTEMUI_PACKAGE = "com.android.systemui";
 

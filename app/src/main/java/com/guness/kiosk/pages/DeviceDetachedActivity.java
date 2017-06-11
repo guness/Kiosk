@@ -6,19 +6,19 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import com.guness.kiosk.R;
+import com.guness.kiosk.core.BaseActivity;
 import com.guness.kiosk.utils.DeviceUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-import static com.guness.kiosk.pages.SettingsActivity.ACTION_USB_PERMISSION;
+import static com.guness.kiosk.core.Constants.ACTION_USB_PERMISSION;
 
-public class DeviceDetachedActivity extends AppCompatActivity {
+public class DeviceDetachedActivity extends BaseActivity {
 
     @BindView(R.id.toolbar)
     Toolbar mToolbar;

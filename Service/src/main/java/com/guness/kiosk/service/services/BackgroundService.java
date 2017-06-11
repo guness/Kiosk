@@ -1,4 +1,4 @@
-package com.guness.kiosk.services;
+package com.guness.kiosk.service.services;
 
 import android.app.Service;
 import android.content.Intent;
@@ -13,7 +13,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.FirebaseDatabase;
-import com.guness.kiosk.models.Command;
+import com.guness.kiosk.service.model.Command;
 
 import java.util.List;
 
@@ -63,7 +63,6 @@ public class BackgroundService extends Service {
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         SharedPreferences prefs = getSharedPreferences(null, MODE_PRIVATE);
         String UDID = prefs.getString("UDID", null);
         if (TextUtils.isEmpty(UDID)) {

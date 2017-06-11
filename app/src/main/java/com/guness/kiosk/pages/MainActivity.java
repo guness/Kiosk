@@ -1,17 +1,14 @@
 package com.guness.kiosk.pages;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import com.guness.kiosk.R;
+import com.guness.kiosk.core.BaseActivity;
 
-import eu.chainfire.libsuperuser.Shell;
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -28,11 +25,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                new AlertDialog.Builder(MainActivity.this)
-                        .setTitle("Root Available?")
-                        .setMessage("available: " + Shell.SU.available())
-                        .setPositiveButton(android.R.string.ok, null)
-                        .show();
             }
         });
     }

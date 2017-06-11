@@ -1,48 +1,12 @@
-package com.guness.kiosk.pages;
+package com.guness.kiosk.service.trash;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbManager;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.provider.Settings;
-import android.support.annotation.UiThread;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.CompoundButton;
-import android.widget.Switch;
-import android.widget.Toast;
-
-import com.guness.kiosk.R;
-import com.guness.kiosk.core.Constants;
-import com.guness.kiosk.services.CardReaderService;
-import com.guness.kiosk.services.OverlayService;
-import com.guness.kiosk.utils.CompatUtils;
-import com.guness.kiosk.utils.DeviceUtils;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnCheckedChanged;
-import eu.chainfire.libsuperuser.Shell;
 
 public class SettingsActivity extends AppCompatActivity {
-
+/*
     private static final String TAG = SettingsActivity.class.getSimpleName();
 
     public static boolean isOnScreen;
-
-    public static final String ACTION_USB_PERMISSION = "com.guness.kiosk.USB_PERMISSION";
 
     public static final String SETUP_COMPLETED = "SETUP_COMPLETED";
     public static final String OVERLAY_ENABLED = "OVERLAY_ENABLED";
@@ -274,4 +238,6 @@ public class SettingsActivity extends AppCompatActivity {
     private void setSelf(boolean self) {
         isSelfAtomic.set(self);
     }
+
+    */
 }

@@ -1,0 +1,110 @@
+{
+  "project_info": {
+    "project_number": "285681095917",
+    "firebase_url": "https://kiosk-ef663.firebaseio.com",
+    "project_id": "kiosk-ef663",
+    "storage_bucket": "kiosk-ef663.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:285681095917:android:07ad9437c0e01f25",
+        "android_client_info": {
+          "package_name": "com.guness.kiosk"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "285681095917-2e7cogqai147dbh6ul8gra1oh8qfoe18.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.guness.kiosk",
+            "certificate_hash": "5fa66fd808bdaebd43806d7dae50a5aa964e8bf9"
+          }
+        },
+        {
+          "client_id": "285681095917-sn7o4h8lots5hj6u1h41be6hhmd7u9ve.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.guness.kiosk",
+            "certificate_hash": "ecfde58bccaf812fb65a3fb4d34e0306309e1b6f"
+          }
+        },
+        {
+          "client_id": "285681095917-pak4835failm1sh5oh2igbp62u2ombp1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_AnMZX04WYqEpaW4i-g4REaPP8gC5NNk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:285681095917:android:43316c4067a8aa3f",
+        "android_client_info": {
+          "package_name": "com.guness.kiosk.service"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "285681095917-8itknevbf45hr41fldgo4k3kgt51ckit.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.guness.kiosk.service",
+            "certificate_hash": "ecfde58bccaf812fb65a3fb4d34e0306309e1b6f"
+          }
+        },
+        {
+          "client_id": "285681095917-ett3m4qmbuj3asgblejnls4nssopbbpc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.guness.kiosk.service",
+            "certificate_hash": "5fa66fd808bdaebd43806d7dae50a5aa964e8bf9"
+          }
+        },
+        {
+          "client_id": "285681095917-pak4835failm1sh5oh2igbp62u2ombp1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_AnMZX04WYqEpaW4i-g4REaPP8gC5NNk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "285681095917-pak4835failm1sh5oh2igbp62u2ombp1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -14,12 +13,13 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.guness.kiosk.R;
+import com.guness.kiosk.core.BaseActivity;
 import com.guness.kiosk.services.OverlayService;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class WebActivity extends AppCompatActivity {
+public class WebActivity extends BaseActivity {
 
     public static final String TAG = WebActivity.class.getSimpleName();
 
