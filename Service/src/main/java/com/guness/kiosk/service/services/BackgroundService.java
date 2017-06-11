@@ -50,8 +50,7 @@ public class BackgroundService extends Service {
                         "setprop service.adb.tcp.port 5555",
                         "stop adbd",
                         "start adbd",
-                        "getprop service.adb.tcp.port",
-                        "adb connect localhost"});
+                        "getprop service.adb.tcp.port"});
                 if (result == null) {
                     Log.e(TAG, "adb over TCP failed");
                 } else {

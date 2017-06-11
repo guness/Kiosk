@@ -39,14 +39,9 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".pages.DeviceDetachedActivity"
-            android:screenOrientation="landscape"
-            android:theme="@style/FullscreenTheme" />
-        <activity
             android:name=".pages.WebActivity"
             android:screenOrientation="landscape"
             android:theme="@style/FullscreenTheme" />
-
         <activity
             android:name=".pages.ScreenSaverActivity"
             android:launchMode="singleInstance"
@@ -89,6 +84,7 @@
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter" />
         </activity>
+
     </application>
 
 </manifest>

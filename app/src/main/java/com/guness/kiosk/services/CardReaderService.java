@@ -21,6 +21,8 @@ import com.guness.kiosk.utils.DeviceUtils;
 
 import java.util.Arrays;
 
+import static com.guness.kiosk.core.Constants.ACTION_USB_PERMISSION;
+
 
 public class CardReaderService extends Service {
 
@@ -28,8 +30,6 @@ public class CardReaderService extends Service {
 
     public static final String ACTION_CARD_ATTACHED = "CardReaderService_cardAttached";
     public static final String ACTION_CARD_DETACHED = "CardReaderService_cardDetached";
-
-    private static final String ACTION_USB_PERMISSION = "com.guness.kiosk.USB_PERMISSION";
 
     private static final String[] stateStrings = {"Unknown", "Absent", "Present", "Swallowed", "Powered", "Negotiable", "Specific"};
 
@@ -104,14 +104,23 @@ public class CardReaderService extends Service {
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         registerReceiver(mUsbReceiver, filter);
 
-        UsbDevice device = DeviceUtils.getConnectedReader(mUsbManager);
-        if (device != null) {
-            mUsbManager.requestPermission(device, mPermissionIntent);
-        }
-
         PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         mWakeLock = powerManager.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.PARTIAL_WAKE_LOCK, BuildConfig.APPLICATION_ID);
         mWakeLock.acquire();
+        new UsbLooper().start();
+/*
+
+
+        UsbManager usbManager = (UsbManager) getSystemService(USB_SERVICE);
+        UsbDevice device = DeviceUtils.getConnectedReader(usbManager);
+        if (device != null) {
+            isAttached = true;
+            usbManager.requestPermission(device, PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0));
+            mSnackbar.dismiss();
+            finish();
+        } else {
+            mSnackbar.show();
+        }*/
     }
 
     private void killMetaTrader(Context context) {
@@ -140,6 +149,15 @@ public class CardReaderService extends Service {
             mUsbManager.requestPermission(device, mPermissionIntent);
         }
         return START_STICKY;
+    }
+
+    private void openDevice(UsbDevice device) {
+        try {
+            Log.e(TAG, "openDevice");
+            mReader.open(device);
+        } catch (Exception e) {
+            Log.e(TAG, "Error while opening device", e);
+        }
     }
 
     private class UsbReceiver extends BroadcastReceiver {
@@ -182,15 +200,22 @@ public class CardReaderService extends Service {
         }
     }
 
+    private class UsbLooper extends Thread {
+        private boolean isPlay = true;
 
-    private void openDevice(UsbDevice device) {
-        try {
-            Log.e(TAG, "openDevice");
-            mReader.open(device);
-        } catch (Exception e) {
-            Log.e(TAG, "Error while opening device", e);
+        @Override
+        public void run() {
+            do {
+                UsbDevice device = DeviceUtils.getConnectedReader(mUsbManager);
+                if (device != null) {
+                    mUsbManager.requestPermission(device, mPermissionIntent);
+                }
+                try {
+                    sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            } while (isPlay);
         }
     }
-
-
 }

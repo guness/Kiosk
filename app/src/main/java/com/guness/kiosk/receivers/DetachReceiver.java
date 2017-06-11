@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 
-import com.guness.kiosk.pages.DeviceDetachedActivity;
+import com.guness.kiosk.pages.ScreenSaverActivity;
 import com.guness.kiosk.utils.DeviceUtils;
 
 import static android.content.Context.USB_SERVICE;
@@ -21,7 +21,7 @@ public class DetachReceiver extends BroadcastReceiver {
         UsbManager usbManager = (UsbManager) context.getSystemService(USB_SERVICE);
         UsbDevice usbDevice = DeviceUtils.getConnectedReader(usbManager);
         if (usbDevice == null) {
-            context.startActivity(new Intent(context, DeviceDetachedActivity.class).addFlags(FLAG_ACTIVITY_NEW_TASK));
+            context.startActivity(new Intent(context, ScreenSaverActivity.class).addFlags(FLAG_ACTIVITY_NEW_TASK));
         }
     }
 }
