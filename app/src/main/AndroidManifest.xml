@@ -17,11 +17,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".pages.MainActivity"
-            android:exported="true"
-            android:screenOrientation="landscape" />
+            android:name=".pages.TradeCenterActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/FullscreenTheme" />
         <activity
-            android:name=".pages.FullscreenActivity"
+            android:name=".pages.MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:excludeFromRecents="true"
             android:label="@string/app_name"

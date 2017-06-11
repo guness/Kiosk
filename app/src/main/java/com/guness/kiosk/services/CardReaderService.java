@@ -16,12 +16,15 @@ import android.util.Log;
 import com.acs.smartcard.Reader;
 import com.acs.smartcard.ReaderException;
 import com.guness.kiosk.BuildConfig;
-import com.guness.kiosk.pages.ScreenSaverActivity;
+import com.guness.kiosk.pages.MainActivity;
 import com.guness.kiosk.utils.DeviceUtils;
 
 import java.util.Arrays;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
 
 import static com.guness.kiosk.core.Constants.ACTION_USB_PERMISSION;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 
 public class CardReaderService extends Service {
@@ -39,6 +42,7 @@ public class CardReaderService extends Service {
 
     private UsbReceiver mUsbReceiver;
     private PowerManager.WakeLock mWakeLock;
+    private ScheduledFuture<?> mBeeperHandle;
 
     public CardReaderService() {
     }
@@ -51,7 +55,7 @@ public class CardReaderService extends Service {
 
     @Override
     public void onCreate() {
-
+        Log.e(TAG, "CardReaderService onCreate");
         mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         mReader = new Reader(mUsbManager);
 
@@ -72,15 +76,13 @@ public class CardReaderService extends Service {
                 LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_CARD_DETACHED));
 
                 startActivity(
-                        new Intent(this, ScreenSaverActivity.class)
+                        new Intent(this, MainActivity.class)
                                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
                 );
             } else if (currState == Reader.CARD_PRESENT) {
-                LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_CARD_ATTACHED));
-
-                byte[] command = {(byte) 0xFF, (byte) 0xCA, (byte) 0x00, (byte) 0x00, (byte) 0x08};
+                byte[] command = {(byte) 0xFF, (byte) 0xCA, (byte) 0x00, (byte) 0x00, (byte) 0x0A};
                 byte[] response = new byte[20];
                 int responseLength = 0;
 
@@ -93,6 +95,9 @@ public class CardReaderService extends Service {
                 }
                 Log.e(TAG, "responseLength: " + responseLength);
                 Log.e(TAG, "response: " + Arrays.toString(response));
+                if (responseLength > 2) {
+                    LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_CARD_ATTACHED));
+                }
             }
         });
 
@@ -107,20 +112,8 @@ public class CardReaderService extends Service {
         PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         mWakeLock = powerManager.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.PARTIAL_WAKE_LOCK, BuildConfig.APPLICATION_ID);
         mWakeLock.acquire();
-        new UsbLooper().start();
-/*
 
-
-        UsbManager usbManager = (UsbManager) getSystemService(USB_SERVICE);
-        UsbDevice device = DeviceUtils.getConnectedReader(usbManager);
-        if (device != null) {
-            isAttached = true;
-            usbManager.requestPermission(device, PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0));
-            mSnackbar.dismiss();
-            finish();
-        } else {
-            mSnackbar.show();
-        }*/
+        startBeeping();
     }
 
     private void killMetaTrader(Context context) {
@@ -129,6 +122,8 @@ public class CardReaderService extends Service {
 
     @Override
     public void onDestroy() {
+        mWakeLock.release();
+        mBeeperHandle.cancel(true);
         UsbDevice device = DeviceUtils.getConnectedReader(mUsbManager);
         if (device != null && device.equals(mReader.getDevice())) {
             try {
@@ -144,16 +139,13 @@ public class CardReaderService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.e(TAG, "onStartCommand");
-        UsbDevice device = DeviceUtils.getConnectedReader(mUsbManager);
-        if (device != null) {
-            mUsbManager.requestPermission(device, mPermissionIntent);
-        }
+        startBeeping();
         return START_STICKY;
     }
 
     private void openDevice(UsbDevice device) {
         try {
-            Log.e(TAG, "openDevice");
+            Log.e(TAG, "openDevice: " + mReader.isOpened());
             mReader.open(device);
         } catch (Exception e) {
             Log.e(TAG, "Error while opening device", e);
@@ -200,22 +192,21 @@ public class CardReaderService extends Service {
         }
     }
 
-    private class UsbLooper extends Thread {
-        private boolean isPlay = true;
-
-        @Override
-        public void run() {
-            do {
-                UsbDevice device = DeviceUtils.getConnectedReader(mUsbManager);
-                if (device != null) {
+    public void startBeeping() {
+        if (mBeeperHandle != null) {
+            mBeeperHandle.cancel(true);
+        }
+        Log.e(TAG, "startBeepinging");
+        final Runnable beeper = () -> {
+            UsbDevice device = DeviceUtils.getConnectedReader(mUsbManager);
+            if (device != null) {
+                if (mUsbManager.hasPermission(device)) {
+                    openDevice(device);
+                } else {
                     mUsbManager.requestPermission(device, mPermissionIntent);
                 }
-                try {
-                    sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            } while (isPlay);
-        }
+            }
+        };
+        mBeeperHandle = Executors.newScheduledThreadPool(1).scheduleAtFixedRate(beeper, 3, 10, SECONDS);
     }
 }

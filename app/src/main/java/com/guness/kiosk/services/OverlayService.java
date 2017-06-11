@@ -13,7 +13,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.guness.kiosk.R;
-import com.guness.kiosk.pages.FullscreenActivity;
+import com.guness.kiosk.pages.TradeCenterActivity;
 import com.guness.kiosk.utils.CompatUtils;
 
 public class OverlayService extends Service {
@@ -29,14 +29,14 @@ public class OverlayService extends Service {
         public void onReceive(Context context, Intent intent) {
             if (oView != null) {
                 switch (intent.getAction()) {
-                    case FullscreenActivity.ACTION_ONRESUME:
+                    case TradeCenterActivity.ACTION_ONRESUME:
                         oView.setImageResource(R.drawable.t1);
                         oView.setEnabled(false);
                         break;
-                    case FullscreenActivity.ACTION_ONMETA:
+                    case TradeCenterActivity.ACTION_ONMETA:
                         oView.setImageResource(R.drawable.t2);
                         break;
-                    case FullscreenActivity.ACTION_ONPAUSE:
+                    case TradeCenterActivity.ACTION_ONPAUSE:
                         oView.setEnabled(true);
                         break;
                 }
@@ -72,7 +72,7 @@ public class OverlayService extends Service {
             oView.setOnClickListener(view -> {
                 LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_ONCLICK));
                 startActivity(
-                        new Intent(OverlayService.this, FullscreenActivity.class)
+                        new Intent(OverlayService.this, TradeCenterActivity.class)
                                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -80,9 +80,9 @@ public class OverlayService extends Service {
             });
             oView.setEnabled(false);
             IntentFilter filter = new IntentFilter();
-            filter.addAction(FullscreenActivity.ACTION_ONPAUSE);
-            filter.addAction(FullscreenActivity.ACTION_ONRESUME);
-            filter.addAction(FullscreenActivity.ACTION_ONMETA);
+            filter.addAction(TradeCenterActivity.ACTION_ONPAUSE);
+            filter.addAction(TradeCenterActivity.ACTION_ONRESUME);
+            filter.addAction(TradeCenterActivity.ACTION_ONMETA);
             LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver, filter);
         } else {
             stopSelf();
