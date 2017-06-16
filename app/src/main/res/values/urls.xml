@@ -5,4 +5,5 @@
     <string name="url_ranglist">http://tradecenter24.com/tradestationapp/jackpot</string>
     <string name="url_screen_saver">http://tradecenter24.com/tradestationapp/screensaver</string>
     <string name="url_faq">http://tradecenter24.com/tradestationapp/faq</string>
+    <string name="url_movie">http://tradecenter24.com/app/screensaver.mov</string>
 </resources>
