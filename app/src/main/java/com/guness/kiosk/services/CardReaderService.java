@@ -19,9 +19,11 @@ import android.util.Log;
 import com.acs.smartcard.Reader;
 import com.acs.smartcard.ReaderException;
 import com.guness.kiosk.BuildConfig;
+import com.guness.kiosk.core.WebServiceManager;
 import com.guness.kiosk.pages.MainActivity;
 import com.guness.kiosk.service.ICommandService;
 import com.guness.kiosk.utils.DeviceUtils;
+import com.guness.kiosk.ws.SCAValidateCardServiceResponse;
 
 import java.util.Arrays;
 import java.util.concurrent.Executors;
@@ -39,16 +41,16 @@ public class CardReaderService extends Service {
     public static final String ACTION_CARD_ATTACHED = "CardReaderService_cardAttached";
     public static final String ACTION_CARD_DETACHED = "CardReaderService_cardDetached";
 
-    byte[] RESPONSE_OK = {(byte) 0x90, 0x00};
-    byte[] RESPONSE_ERROR = {(byte) 0x63, 0x00};
+    final static byte[] RESPONSE_OK = {(byte) 0x90, 0x00};
+    final static byte[] RESPONSE_ERROR = {(byte) 0x63, 0x00};
 
-    byte[] command = {(byte) 0xFF, (byte) 0xCA, (byte) 0x00, (byte) 0x00, (byte) 0x0A};
+    final static byte[] command = {(byte) 0xFF, (byte) 0xCA, (byte) 0x00, (byte) 0x00, (byte) 0x0A};
     //Note last 6 byte is Key
-    byte[] AUTH_COMMAND = {FF, (byte) 0x82, 0x00, 0x00, 0x06, FF, FF, FF, FF, FF, FF};
-    byte[] LOAD_SECTION_2 = {FF, (byte) 0x86, 0x00, 0x00, 0x05, 0x01, 0x00, 0x08, 0x60, 0x00};
-    byte[] READ_S2B0 = {FF, (byte) 0xB0, 0x00, 0x08, 0x10};
-    byte[] LOAD_SECTION_3 = {FF, (byte) 0x86, 0x00, 0x00, 0x05, 0x01, 0x00, 0x0C, 0x60, 0x00};
-    byte[] READ_S3B0 = {FF, (byte) 0xB0, 0x00, 0x0C, 0x10};
+    final static byte[] AUTH_COMMAND = {FF, (byte) 0x82, 0x00, 0x00, 0x06, FF, FF, FF, FF, FF, FF};
+    final static byte[] LOAD_SECTION_2 = {FF, (byte) 0x86, 0x00, 0x00, 0x05, 0x01, 0x00, 0x08, 0x60, 0x00};
+    final static byte[] READ_S2B0 = {FF, (byte) 0xB0, 0x00, 0x08, 0x10};
+    final static byte[] LOAD_SECTION_3 = {FF, (byte) 0x86, 0x00, 0x00, 0x05, 0x01, 0x00, 0x0C, 0x60, 0x00};
+    final static byte[] READ_S3B0 = {FF, (byte) 0xB0, 0x00, 0x0C, 0x10};
 
 
     private static final String[] stateStrings = {"Unknown", "Absent", "Present", "Swallowed", "Powered", "Negotiable", "Specific"};
@@ -168,8 +170,15 @@ public class CardReaderService extends Service {
                     e.printStackTrace();
                 }
                 if (cardId != null && secret != null) {
-                    // TODO: send webservice
-                    LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_CARD_ATTACHED));
+                    try {
+                        SCAValidateCardServiceResponse serviceResponse = WebServiceManager.getInstance().validateCardData(cardId, secret);
+
+                        if (serviceResponse != null && serviceResponse.IsValid) {
+                            LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_CARD_ATTACHED));
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         });
