@@ -60,7 +60,7 @@ public class TradeCenterActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fullscreen);
+        setContentView(R.layout.activity_trade_center);
         ButterKnife.bind(this);
         mPrefs = getSharedPreferences(null, MODE_PRIVATE);
 

@@ -43,12 +43,6 @@
             android:name=".pages.WebActivity"
             android:screenOrientation="landscape"
             android:theme="@style/FullscreenTheme" />
-        <activity
-            android:name=".pages.ScreenSaverActivity"
-            android:launchMode="singleInstance"
-            android:noHistory="true"
-            android:screenOrientation="landscape"
-            android:theme="@style/FullscreenTheme" />
 
         <receiver
             android:name=".receivers.DetachReceiver"
