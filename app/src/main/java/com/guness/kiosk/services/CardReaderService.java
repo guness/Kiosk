@@ -32,11 +32,24 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 
 public class CardReaderService extends Service {
+    private static final byte FF = (byte) 0xFF;
 
     private static final String TAG = CardReaderService.class.getSimpleName();
 
     public static final String ACTION_CARD_ATTACHED = "CardReaderService_cardAttached";
     public static final String ACTION_CARD_DETACHED = "CardReaderService_cardDetached";
+
+    byte[] RESPONSE_OK = {(byte) 0x90, 0x00};
+    byte[] RESPONSE_ERROR = {(byte) 0x63, 0x00};
+
+    byte[] command = {(byte) 0xFF, (byte) 0xCA, (byte) 0x00, (byte) 0x00, (byte) 0x0A};
+    //Note last 6 byte is Key
+    byte[] AUTH_COMMAND = {FF, (byte) 0x82, 0x00, 0x00, 0x06, FF, FF, FF, FF, FF, FF};
+    byte[] LOAD_SECTION_2 = {FF, (byte) 0x86, 0x00, 0x00, 0x05, 0x01, 0x00, 0x08, 0x60, 0x00};
+    byte[] READ_S2B0 = {FF, (byte) 0xB0, 0x00, 0x08, 0x10};
+    byte[] LOAD_SECTION_3 = {FF, (byte) 0x86, 0x00, 0x00, 0x05, 0x01, 0x00, 0x0C, 0x60, 0x00};
+    byte[] READ_S3B0 = {FF, (byte) 0xB0, 0x00, 0x0C, 0x10};
+
 
     private static final String[] stateStrings = {"Unknown", "Absent", "Present", "Swallowed", "Powered", "Negotiable", "Specific"};
 
@@ -90,20 +103,72 @@ public class CardReaderService extends Service {
                                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
                 );
             } else if (currState == Reader.CARD_PRESENT) {
-                byte[] command = {(byte) 0xFF, (byte) 0xCA, (byte) 0x00, (byte) 0x00, (byte) 0x0A};
                 byte[] response = new byte[20];
                 int responseLength = 0;
+
+                String cardId = null;
+                String secret = null;
 
                 try {
                     mReader.power(slotNum, Reader.CARD_WARM_RESET);
                     mReader.setProtocol(slotNum, Reader.PROTOCOL_T0 | Reader.PROTOCOL_T1);
                     responseLength = mReader.transmit(slotNum, command, command.length, response, response.length);
+                    Log.e(TAG, "responseLength: " + responseLength);
+                    Log.e(TAG, "response: " + Arrays.toString(response));
+
+                    // Send AUTH
+                    responseLength = mReader.transmit(slotNum, AUTH_COMMAND, AUTH_COMMAND.length, response, response.length);
+                    if (!matchesResponse(RESPONSE_OK, response, responseLength)) {
+                        Log.e(TAG, "Error on Authentication card");
+                        return;
+                    }
+
+                    //Pick Section 2
+                    responseLength = mReader.transmit(slotNum, LOAD_SECTION_2, LOAD_SECTION_2.length, response, response.length);
+                    if (!matchesResponse(RESPONSE_OK, response, responseLength)) {
+                        Log.e(TAG, "Cannot pick section 2");
+                        return;
+                    }
+
+                    //Read Block 0
+                    responseLength = mReader.transmit(slotNum, READ_S2B0, READ_S2B0.length, response, response.length);
+                    if (!matchesResponse(RESPONSE_OK, response, responseLength)) {
+                        Log.e(TAG, "Cannot read S2B0: " + Arrays.toString(response));
+                        return;
+                    } else {
+                        cardId = new String(response, 0, responseLength - RESPONSE_OK.length);
+                        Log.d(TAG, "Card ID: " + cardId);
+                    }
+
+                    // Send AUTH
+                    responseLength = mReader.transmit(slotNum, AUTH_COMMAND, AUTH_COMMAND.length, response, response.length);
+                    if (!matchesResponse(RESPONSE_OK, response, responseLength)) {
+                        Log.e(TAG, "Error on Authentication card");
+                        return;
+                    }
+
+                    //Pick Section 2
+                    responseLength = mReader.transmit(slotNum, LOAD_SECTION_3, LOAD_SECTION_3.length, response, response.length);
+                    if (!matchesResponse(RESPONSE_OK, response, responseLength)) {
+                        Log.e(TAG, "Cannot pick section 3");
+                        return;
+                    }
+
+                    //Read Block 0
+                    responseLength = mReader.transmit(slotNum, READ_S3B0, READ_S3B0.length, response, response.length);
+                    if (!matchesResponse(RESPONSE_OK, response, responseLength)) {
+                        Log.e(TAG, "Cannot read S3B0: " + Arrays.toString(response));
+                        return;
+                    } else {
+                        secret = new String(response, 0, responseLength - RESPONSE_OK.length).trim();
+                        Log.d(TAG, "Secret: " + secret);
+                    }
+
                 } catch (ReaderException e) {
                     e.printStackTrace();
                 }
-                Log.e(TAG, "responseLength: " + responseLength);
-                Log.e(TAG, "response: " + Arrays.toString(response));
-                if (responseLength > 2) {
+                if (cardId != null && secret != null) {
+                    // TODO: send webservice
                     LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_CARD_ATTACHED));
                 }
             }
@@ -239,5 +304,18 @@ public class CardReaderService extends Service {
             }
         };
         mBeeperHandle = Executors.newScheduledThreadPool(1).scheduleAtFixedRate(beeper, 3, 10, SECONDS);
+    }
+
+    private static boolean matchesResponse(byte[] response, byte[] input, int inputLength) {
+        try {
+            for (int i = 0; i < response.length; i++) {
+                if (response[i] != input[inputLength - response.length + i]) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
