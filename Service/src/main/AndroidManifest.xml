@@ -43,7 +43,11 @@
         <service
             android:name=".services.InteractionService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.guness.kiosk.service.intent.REMOTE" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

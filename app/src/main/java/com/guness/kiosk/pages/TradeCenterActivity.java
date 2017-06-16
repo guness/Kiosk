@@ -1,15 +1,12 @@
 package com.guness.kiosk.pages;
 
-import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -18,8 +15,6 @@ import android.widget.Toast;
 
 import com.guness.kiosk.R;
 import com.guness.kiosk.core.BaseActivity;
-import com.guness.kiosk.services.CardReaderService;
-import com.guness.kiosk.services.OverlayService;
 import com.guness.kiosk.utils.GlowingTask;
 
 import butterknife.BindView;
@@ -44,8 +39,8 @@ public class TradeCenterActivity extends BaseActivity {
     @BindView(R.id.bonus)
     ImageView mBonus;
 
-    @BindView(R.id.jackpot)
-    ImageView mJackpot;
+    @BindView(R.id.ranglist)
+    ImageView mRangList;
 
     @BindView(R.id.faq)
     ImageView mFaq;
@@ -77,7 +72,7 @@ public class TradeCenterActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_ONRESUME));
-        mGlowingTask = new GlowingTask(this, mBonus, mFaq, mJackpot, mNews, mTrade);
+        mGlowingTask = new GlowingTask(this, mBonus, mFaq, mRangList, mNews, mTrade);
         mGlowingTask.execute();
     }
 
@@ -96,7 +91,7 @@ public class TradeCenterActivity extends BaseActivity {
     public void onBackPressed() {
     }
 
-    @OnClick({R.id.trade, R.id.news, R.id.bonus, R.id.jackpot, R.id.faq})
+    @OnClick({R.id.trade, R.id.news, R.id.bonus, R.id.ranglist, R.id.faq})
     void onButtonClicked(View view) {
         String text = null;
         Intent webActivity = new Intent(this, WebActivity.class);
@@ -114,8 +109,8 @@ public class TradeCenterActivity extends BaseActivity {
             case R.id.bonus:
                 startActivity(webActivity.putExtra(WebActivity.EXTRA_URL, getString(R.string.url_bonus)));
                 break;
-            case R.id.jackpot:
-                startActivity(webActivity.putExtra(WebActivity.EXTRA_URL, getString(R.string.url_jackpot)));
+            case R.id.ranglist:
+                startActivity(webActivity.putExtra(WebActivity.EXTRA_URL, getString(R.string.url_ranglist)));
                 break;
             case R.id.faq:
                 startActivity(webActivity.putExtra(WebActivity.EXTRA_URL, getString(R.string.url_faq)));

@@ -23,8 +23,8 @@ public class GlowingTask extends AsyncTask<Void, Boolean, Void> {
     private static final int GLOW_DURATION = 1000;
     private static final int TRANSITION = 800;
 
-    private static final int[] NORMAL_RES = {R.drawable.bonus, R.drawable.faq, R.drawable.jackpot, R.drawable.news, R.drawable.trade};
-    private static final int[] GLOW_RES = {R.drawable.bonus2, R.drawable.faq2, R.drawable.jackpot2, R.drawable.news2, R.drawable.trade2};
+    private static final int[] NORMAL_RES = {R.drawable.bonus, R.drawable.faq, R.drawable.ranglist, R.drawable.news, R.drawable.trade};
+    private static final int[] GLOW_RES = {R.drawable.bonus2, R.drawable.faq2, R.drawable.ranglist2, R.drawable.news2, R.drawable.trade2};
     private static TransitionDrawable[] mTransitions;
 
     private volatile boolean isPlay;

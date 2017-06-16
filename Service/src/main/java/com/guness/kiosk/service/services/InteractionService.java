@@ -13,6 +13,7 @@ import android.os.ServiceManager;
 import android.util.Log;
 
 import com.guness.kiosk.service.BuildConfig;
+import com.guness.kiosk.service.ICommandService;
 import com.guness.kiosk.service.core.Constants;
 
 import java.util.List;
@@ -26,13 +27,25 @@ public class InteractionService extends Service {
     public InteractionService() {
     }
 
+    private final ICommandService.Stub mBinder = new ICommandService.Stub() {
+        @Override
+        public void clearMetaCache() throws RemoteException {
+            Log.e(TAG, "clearMetaCache");
+            killMetaTrader(getApplicationContext());
+        }
+
+        public int getPid() {
+            return Process.myPid();
+        }
+    };
+
     @Override
     public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");
+        // Return the interface
+        return mBinder;
     }
 
-    @Deprecated
+
     private static void wipeMetaTrader() {
         List<String> result = Shell.SU.run(Constants.Commands.COMMAND_WIPE_META);
         if (result == null) {
@@ -62,19 +75,6 @@ public class InteractionService extends Service {
             }
         }
         wipeMetaTrader();
-    }
-
-
-    public static void clearMetaCache() {
-        Log.e(TAG, "Clearing MetaCache");
-        List<String> result = Shell.SU.run(Constants.Commands.COMMANDS_CLEAR_META);
-        if (result == null) {
-            Log.e(TAG, "Could not clear MetaCache");
-        } else {
-            for (String message : result) {
-                Log.d(TAG, "Result: " + message);
-            }
-        }
     }
 
     @Deprecated

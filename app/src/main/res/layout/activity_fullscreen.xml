@@ -62,13 +62,13 @@
             android:layout_weight="34" />
 
         <ImageView
-            android:id="@+id/jackpot"
+            android:id="@+id/ranglist"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="44"
             android:adjustViewBounds="true"
-            android:contentDescription="@string/jackpot"
-            app:srcCompat="@drawable/jackpot" />
+            android:contentDescription="@string/ranglist"
+            app:srcCompat="@drawable/ranglist" />
 
         <View
             android:layout_width="0dp"

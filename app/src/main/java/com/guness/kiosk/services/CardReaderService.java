@@ -3,13 +3,16 @@ package com.guness.kiosk.services;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.RemoteException;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -17,6 +20,7 @@ import com.acs.smartcard.Reader;
 import com.acs.smartcard.ReaderException;
 import com.guness.kiosk.BuildConfig;
 import com.guness.kiosk.pages.MainActivity;
+import com.guness.kiosk.service.ICommandService;
 import com.guness.kiosk.utils.DeviceUtils;
 
 import java.util.Arrays;
@@ -43,6 +47,10 @@ public class CardReaderService extends Service {
     private UsbReceiver mUsbReceiver;
     private PowerManager.WakeLock mWakeLock;
     private ScheduledFuture<?> mBeeperHandle;
+
+    private ICommandService mCommandService;
+
+    private ServiceConnection mConnection;
 
     public CardReaderService() {
     }
@@ -72,7 +80,7 @@ public class CardReaderService extends Service {
             Log.e(TAG, "Slot " + slotNum + ": " + stateStrings[prevState] + " -> " + stateStrings[currState]);
 
             if (currState == Reader.CARD_ABSENT) {
-                killMetaTrader(CardReaderService.this);
+                killMetaTrader();
                 LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_CARD_DETACHED));
 
                 startActivity(
@@ -114,10 +122,32 @@ public class CardReaderService extends Service {
         mWakeLock.acquire();
 
         startBeeping();
+
+        mConnection = new ServiceConnection() {
+            public void onServiceConnected(ComponentName className, IBinder service) {
+                mCommandService = ICommandService.Stub.asInterface(service);
+            }
+
+            public void onServiceDisconnected(ComponentName className) {
+                Log.e(TAG, "Service has unexpectedly disconnected");
+                mCommandService = null;
+            }
+        };
+
+        Intent intent = new Intent("com.guness.kiosk.service.intent.REMOTE");
+        intent.setPackage("com.guness.kiosk.service");
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
-    private void killMetaTrader(Context context) {
-
+    private void killMetaTrader() {
+        Log.e(TAG, "killMetaTrader: " + mCommandService);
+        if (mCommandService != null) {
+            try {
+                mCommandService.clearMetaCache();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -133,6 +163,7 @@ public class CardReaderService extends Service {
             }
         }
         unregisterReceiver(mUsbReceiver);
+        unbindService(mConnection);
         mWakeLock.release();
     }
 
@@ -180,7 +211,7 @@ public class CardReaderService extends Service {
 
                 synchronized (this) {
                     if (device != null && device.equals(mReader.getDevice())) {
-                        killMetaTrader(CardReaderService.this);
+                        killMetaTrader();
                         try {
                             mReader.close();
                         } catch (Exception e) {
