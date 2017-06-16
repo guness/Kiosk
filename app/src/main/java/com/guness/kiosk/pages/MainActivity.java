@@ -18,6 +18,7 @@ import butterknife.BindView;
 
 public class MainActivity extends BaseActivity {
 
+
     private static final String TAG = MainActivity.class.getSimpleName();
 
     @BindView(R.id.videoView)
@@ -56,6 +57,7 @@ public class MainActivity extends BaseActivity {
             mVideoView.stopPlayback();
             LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
         }
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(OverlayService.ACTION_ENABLED_COLORED));
     }
 
     @Override
@@ -65,6 +67,9 @@ public class MainActivity extends BaseActivity {
         startService(new Intent(this, CardReaderService.class));
 
         startService(new Intent(this, OverlayService.class));
+
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(OverlayService.ACTION_DISABLED_COLORED));
     }
 
     @Override

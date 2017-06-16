@@ -19,6 +19,8 @@ import com.guness.kiosk.services.OverlayService;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static com.guness.kiosk.services.OverlayService.ACTION_ENABLED_COLORED;
+
 public class WebActivity extends BaseActivity {
 
     public static final String TAG = WebActivity.class.getSimpleName();
@@ -71,5 +73,11 @@ public class WebActivity extends BaseActivity {
         if (isFinishing()) {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_ENABLED_COLORED));
     }
 }

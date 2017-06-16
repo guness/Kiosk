@@ -21,13 +21,12 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+import static com.guness.kiosk.services.OverlayService.ACTION_ENABLED;
+import static com.guness.kiosk.services.OverlayService.ACTION_DISABLED_COLORED;
+
 public class TradeCenterActivity extends BaseActivity {
 
     private static final String TAG = TradeCenterActivity.class.getSimpleName();
-    public static final String ACTION_ONRESUME = "TradeCenterActivity_onResume";
-    public static final String ACTION_ONPAUSE = "TradeCenterActivity_onPause";
-    public static final String ACTION_ONMETA = "TradeCenterActivity_onMeta";
-
     private static final String APP_METATRADER4 = "net.metaquotes.metatrader4";
 
     @BindView(R.id.trade)
@@ -71,7 +70,7 @@ public class TradeCenterActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_ONRESUME));
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_DISABLED_COLORED));
         mGlowingTask = new GlowingTask(this, mBonus, mFaq, mRangList, mNews, mTrade);
         mGlowingTask.execute();
     }
@@ -81,7 +80,6 @@ public class TradeCenterActivity extends BaseActivity {
         super.onPause();
         mGlowingTask.stop();
         mGlowingTask = null;
-        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_ONPAUSE));
         if (isFinishing()) {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
         }
@@ -98,7 +96,7 @@ public class TradeCenterActivity extends BaseActivity {
         switch (view.getId()) {
             case R.id.trade:
                 if (launchApplication(APP_METATRADER4)) {
-                    LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_ONMETA));
+                    LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_ENABLED));
                 } else {
                     text = "Cannot find selected application.";
                 }

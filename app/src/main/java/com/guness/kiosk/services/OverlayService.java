@@ -24,19 +24,25 @@ public class OverlayService extends Service {
 
     private ImageView oView;
 
+    public static final String ACTION_ENABLED = "OverlayService_onMeta";
+    public static final String ACTION_ENABLED_COLORED = "OverlayService_enabled";
+    public static final String ACTION_DISABLED_COLORED = "OverlayService_disabled";
+
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (oView != null) {
                 switch (intent.getAction()) {
-                    case TradeCenterActivity.ACTION_ONRESUME:
+                    case ACTION_DISABLED_COLORED:
                         oView.setImageResource(R.drawable.t1);
                         oView.setEnabled(false);
                         break;
-                    case TradeCenterActivity.ACTION_ONMETA:
+                    case ACTION_ENABLED:
                         oView.setImageResource(R.drawable.t2);
+                        oView.setEnabled(true);
                         break;
-                    case TradeCenterActivity.ACTION_ONPAUSE:
+                    case ACTION_ENABLED_COLORED:
+                        oView.setImageResource(R.drawable.t1);
                         oView.setEnabled(true);
                         break;
                 }
@@ -80,9 +86,9 @@ public class OverlayService extends Service {
             });
             oView.setEnabled(false);
             IntentFilter filter = new IntentFilter();
-            filter.addAction(TradeCenterActivity.ACTION_ONPAUSE);
-            filter.addAction(TradeCenterActivity.ACTION_ONRESUME);
-            filter.addAction(TradeCenterActivity.ACTION_ONMETA);
+            filter.addAction(ACTION_ENABLED_COLORED);
+            filter.addAction(ACTION_DISABLED_COLORED);
+            filter.addAction(ACTION_ENABLED);
             LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver, filter);
         } else {
             stopSelf();
