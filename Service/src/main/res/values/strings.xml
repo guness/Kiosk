@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">Kiosk Service</string>
     <string name="permission_description">Required for accessing Kiosk Service.</string>
+    <string name="device_name">Device Name</string>
+    <string name="save">Save</string>
 </resources>

@@ -74,7 +74,8 @@ public class BackgroundService extends Service {
     void listenCommands(String UUID) {
         Log.i(TAG, "Connected to Firebase");
         FirebaseDatabase.getInstance().getReference("devices").child(UUID).child("lastOnline").setValue(System.currentTimeMillis());
-        FirebaseDatabase.getInstance().getReference("devices").child(UUID).child("name").setValue(android.os.Build.MANUFACTURER + " [" + android.os.Build.PRODUCT + "]");
+        FirebaseDatabase.getInstance().getReference("devices").child(UUID).child("manifacturer").setValue(android.os.Build.MANUFACTURER);
+        FirebaseDatabase.getInstance().getReference("devices").child(UUID).child("product").setValue(android.os.Build.PRODUCT);
         FirebaseDatabase.getInstance().getReference("devices").child(UUID).child("commands").orderByChild("isExecuted").equalTo(false).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {

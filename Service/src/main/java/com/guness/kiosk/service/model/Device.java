@@ -9,4 +9,8 @@ public class Device {
     String name;
     List<Command> commands;
     long lastOnline;
+
+    public String getName() {
+        return name;
+    }
 }
