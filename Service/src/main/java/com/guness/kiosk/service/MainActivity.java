@@ -8,7 +8,10 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -36,6 +39,20 @@ public class MainActivity extends AppCompatActivity {
         String UDID = prefs.getString("UDID", null);
         if (!TextUtils.isEmpty(UDID)) {
             mUdidView.setText(UDID);
+            FirebaseDatabase.getInstance().getReference("devices").child(UDID).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    String name = dataSnapshot.getValue(String.class);
+                    if (name != null) {
+                        mInputText.setText(name);
+                        mInputText.setSelection(name.length());
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            });
         }
     }
 
