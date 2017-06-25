@@ -1,6 +1,5 @@
 package com.guness.kiosk.service.model;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -13,14 +12,17 @@ public class Command {
     public boolean asRoot;
     public boolean isExecuted;
     public boolean isFailed;
+    public String key;
 
     @Override
     public String toString() {
-        return "{" +
-                "'command' : '" + command + "', " +
-                "'asRoot':" + asRoot + ", " +
-                "'result[]':'" + Arrays.toString(result.toArray()) + "', " +
-                "'isExecuted':" + isExecuted + ", " +
-                "'isFailed': " + isFailed + "}";
+        return "Command{" +
+                "command='" + command + '\'' +
+                ", result=" + result +
+                ", asRoot=" + asRoot +
+                ", isExecuted=" + isExecuted +
+                ", isFailed=" + isFailed +
+                ", key='" + key + '\'' +
+                '}';
     }
 }

@@ -1,0 +1,55 @@
+{
+  "rules": {
+    "devices": {
+      "$device": {
+        ".write": "!data.exists() || !newData.exists()",
+        "lastOnline": {
+          ".write": "true",
+          ".read": "true"
+        },
+        "globalCommandResults": {
+          ".write": "true",
+          ".read": "true"
+        },
+        "name": {
+          ".write": "true",
+          ".read": "true"
+        },
+        "product": {
+          ".write": "true"
+        },
+        "manufacturer": {
+          ".write": "true"
+        },
+        "commands": {
+          ".read": "true",
+          ".indexOn": "isExecuted",
+          "$command": {
+            "isFailed": {
+              ".write": "true"
+            },
+            "isExecuted": {
+              ".read": "true",
+              ".write": "true"
+            },
+            "result": {
+              ".write": "true"
+            },
+            "asRoot": {
+              ".read": "true"
+            },
+            "command": {
+              ".read": "true"
+            }
+          }
+        }
+      }
+    },
+    "globalCommands": {
+      ".read": "true",
+      "commands": {
+        ".indexOn": "isExecuted"
+      }
+    }
+  }
+}

@@ -5,6 +5,10 @@ package com.guness.kiosk.service.core;
  */
 
 public class Constants {
+    public static final int MAX_COMMANDS = 10;
+
+
+
     public static final String META_PACKAGE = "net.metaquotes.metatrader4";
     public static final String SYSTEMUI_PACKAGE = "com.android.systemui";
 
