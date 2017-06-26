@@ -3,9 +3,8 @@ package com.guness.kiosk.service.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by guness on 25/06/2017.
@@ -14,39 +13,40 @@ import java.util.List;
 public class SavedList {
     private SharedPreferences preferences;
     private final int limit;
-    private final String name;
-    private final List<String> internalList = new ArrayList<>();
+    private final HashMap<String, String> internalList = new HashMap<>();
 
     public SavedList(Context context, String name, int max) {
         this.limit = max;
-        this.name = name;
-        this.preferences = context.getSharedPreferences(null, Context.MODE_PRIVATE);
-        internalList.addAll(preferences.getStringSet(name, new HashSet<>()));
+        this.preferences = context.getSharedPreferences(name, Context.MODE_PRIVATE);
+        internalList.putAll((Map<? extends String, ? extends String>) preferences.getAll());
         trimList();
     }
 
     private void trimList() {
         while (internalList.size() > limit) {
-            internalList.remove(0);
+            internalList.remove(internalList.keySet().iterator().next());
         }
     }
 
-    public void addString(String value) {
-        if (value == null) {
-            value = "NULL";
+    public void putValue(String key, String value) {
+        if (key == null) {
+            key = "NULL";
         }
-        if (internalList.contains(value)) {
-            return;
-        }
-        internalList.add(value);
+        internalList.put(key, value);
         trimList();
-        preferences.edit().putStringSet(name, new HashSet<>(internalList)).apply();
+        SharedPreferences.Editor editor = preferences.edit();
+        internalList.forEach(editor::putString);
+        editor.apply();
     }
 
-    public boolean contains(String value) {
-        if (value == null) {
-            value = "NULL";
+    public boolean contains(String key) {
+        if (key == null) {
+            key = "NULL";
         }
-        return internalList.contains(value);
+        return internalList.keySet().contains(key);
+    }
+
+    public String getValue(String key, String defaultValue) {
+        return internalList.getOrDefault(key, defaultValue);
     }
 }

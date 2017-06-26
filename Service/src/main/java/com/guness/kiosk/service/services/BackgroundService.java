@@ -34,6 +34,7 @@ import static com.guness.kiosk.service.utils.firebase.FirebaseKeys.LAST_ONLINE;
 import static com.guness.kiosk.service.utils.firebase.FirebaseKeys.MANUFACTURER;
 import static com.guness.kiosk.service.utils.firebase.FirebaseKeys.PRODUCT;
 import static com.guness.kiosk.service.utils.firebase.FirebaseKeys.RESULT;
+import static com.guness.kiosk.service.utils.firebase.FirebaseKeys.SUCCESS;
 import static com.guness.kiosk.service.utils.firebase.FirebaseKeys.UUID;
 
 public class BackgroundService extends Service {
@@ -135,19 +136,33 @@ public class BackgroundService extends Service {
             return;
         }
         if (command != null) {
-            if (!command.isExecuted && !mGlobalResults.contains(command.key)) {
-                Log.e(TAG, "Consuming command: '" + command.command + "'");
-                List<String> result;
-                mDeviceRef.child(GLOBAL_COMMAND_RESULTS).child(dataSnapshot.getKey()).setValue(EXECUTING);
-                if (command.asRoot) {
-                    result = Shell.SU.run(command.command);
-                } else {
-                    result = Shell.SH.run(command.command);
+            if (!command.isExecuted) {
+                String previousResult = mGlobalResults.getValue(command.key, null);
+                if (TextUtils.isEmpty(previousResult)) {
+                    Log.e(TAG, "Consuming command: '" + command.command + "'");
+
+                    DatabaseReference executing = mDeviceRef.child(GLOBAL_COMMAND_RESULTS).child(dataSnapshot.getKey());
+
+                    mGlobalResults.putValue(command.key, EXECUTING);
+                    executing.setValue(EXECUTING);
+
+                    List<String> result;
+                    if (command.asRoot) {
+                        result = Shell.SU.run(command.command);
+                    } else {
+                        result = Shell.SH.run(command.command);
+                    }
+
+
+                    if (result == null) {
+                        executing.setValue(FAILED);
+                        mGlobalResults.putValue(command.key, FAILED);
+                    } else {
+                        executing.setValue(result);
+                        mGlobalResults.putValue(command.key, SUCCESS);
+                    }
+
                 }
-
-                mDeviceRef.child(GLOBAL_COMMAND_RESULTS).child(dataSnapshot.getKey()).setValue(result == null ? FAILED : result);
-
-                mGlobalResults.addString(command.key);
             }
         }
     }

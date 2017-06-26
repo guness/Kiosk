@@ -18,5 +18,6 @@ public class FirebaseKeys {
     public static final String IS_FAILED = "isFailed";
     public static final String RESULT = "result";
     public static final String EXECUTING = "EXECUTING";
+    public static final String SUCCESS = "SUCCESS";
     public static final String FAILED = "FAILED";
 }
