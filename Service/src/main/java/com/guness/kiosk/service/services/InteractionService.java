@@ -10,15 +10,27 @@ import android.os.IBinder;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.guness.kiosk.service.BuildConfig;
 import com.guness.kiosk.service.ICommandService;
-import com.guness.kiosk.service.core.Constants;
+import com.guness.kiosk.service.R;
+import com.guness.kiosk.service.utils.FileUtils;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.List;
 
 import eu.chainfire.libsuperuser.Shell;
+
+import static com.guness.kiosk.service.core.Constants.Commands;
+import static com.guness.kiosk.service.core.Constants.META_PACKAGE;
 
 public class InteractionService extends Service {
 
@@ -46,8 +58,9 @@ public class InteractionService extends Service {
     }
 
 
-    private static void wipeMetaTrader() {
-        List<String> result = Shell.SU.run(Constants.Commands.COMMAND_WIPE_META);
+    private static void wipeMetaTrader(Context context) {
+        String owner = parseMetaOwner();
+        List<String> result = Shell.SU.run(Commands.COMMAND_WIPE_META);
         if (result == null) {
             Log.e(TAG, "MetaWipe Failed");
         } else {
@@ -55,6 +68,37 @@ public class InteractionService extends Service {
                 Log.d(TAG, "MetaWipe: " + message);
             }
         }
+        if (owner != null) {
+            try {
+                File file = File.createTempFile("mt4", null, context.getCacheDir());
+                InputStream is = context.getResources().openRawResource(R.raw.mt4);
+                OutputStream os = new FileOutputStream(file);
+                FileUtils.copyStream(is, os);
+                Shell.SU.run(Commands.COMMAND_CREATE_META_PREFS);
+                List<String> ownerResult = Shell.SU.run(new String[]{Commands.CommandCopyMT4(file.getAbsolutePath()), Commands.CommandSetMetaOwner(owner)});
+                if (ownerResult != null) {
+                    Log.d(TAG, "Owner Result: " + Arrays.toString(ownerResult.toArray()));
+                }
+            } catch (IOException e) {
+                Log.e(TAG, "Error creating mt4.xml", e);
+            }
+        }
+    }
+
+    @Nullable
+    private static String parseMetaOwner() {
+        List<String> result = Shell.SU.run(Commands.COMMAND_GET_META_OWER);
+        if (result != null && result.size() > 0) {
+            String line = result.get(0);
+            if (!TextUtils.isEmpty(line)) {
+                String[] tokens = line.split("\\s+");
+                if (tokens.length > 3) {
+                    return tokens[1] + ":" + tokens[2];
+                }
+            }
+        }
+        Log.e(TAG, "Error Parsing meta owner: " + (result == null ? "null" : Arrays.toString(result.toArray())));
+        return null;
     }
 
     public static void killMetaTrader(Context context) {
@@ -62,7 +106,7 @@ public class InteractionService extends Service {
         List<ActivityManager.RunningAppProcessInfo> activities = manager.getRunningAppProcesses();
         for (int iCnt = 0; iCnt < activities.size(); iCnt++) {
             ActivityManager.RunningAppProcessInfo info = activities.get(iCnt);
-            if (info.processName.contains(Constants.META_PACKAGE)) {
+            if (info.processName.contains(META_PACKAGE)) {
 
                 List<String> result = Shell.SU.run("kill -9 " + info.pid);
                 if (result == null) {
@@ -74,7 +118,7 @@ public class InteractionService extends Service {
                 }
             }
         }
-        wipeMetaTrader();
+        wipeMetaTrader(context);
     }
 
     @Deprecated

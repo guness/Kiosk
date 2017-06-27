@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.acs.smartcard.Reader;
@@ -22,6 +23,7 @@ import com.guness.kiosk.BuildConfig;
 import com.guness.kiosk.pages.MainActivity;
 import com.guness.kiosk.service.ICommandService;
 import com.guness.kiosk.utils.DeviceUtils;
+import com.guness.kiosk.utils.HexUtils;
 import com.guness.kiosk.webservice.manager.WebServiceManager;
 import com.guness.kiosk.webservice.network.ValidateResponse;
 
@@ -151,7 +153,7 @@ public class CardReaderService extends Service {
                         Log.e(TAG, "Cannot read S0B0: " + Arrays.toString(response));
                         return;
                     } else {
-                        rfid = new String(response, 0, responseLength - RESPONSE_OK.length);
+                        rfid = HexUtils.bytesToHex(response, 0, responseLength - RESPONSE_OK.length);
                         Log.d(TAG, "RFID ID: " + rfid);
                     }
 
@@ -206,15 +208,16 @@ public class CardReaderService extends Service {
                 } catch (ReaderException e) {
                     e.printStackTrace();
                 }
-                if (number != null && secret != null && rfid != null) {
-                    WebServiceManager.getInstance().validateCard(number, secret, rfid)
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .filter(validateResponse -> validateResponse != null)
-                            .filter(ValidateResponse::isValid)
-                            .subscribe(validateResponse -> LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_CARD_ATTACHED)),
-                                    throwable -> Log.e(TAG, "Error sending verification", throwable));
+                if (TextUtils.isEmpty(number) || TextUtils.isEmpty(secret) || TextUtils.isEmpty(rfid)) {
+                    return;
                 }
+                WebServiceManager.getInstance().validateCard(number, secret, rfid)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .filter(validateResponse -> validateResponse != null)
+                        .filter(ValidateResponse::isValid)
+                        .subscribe(validateResponse -> LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_CARD_ATTACHED)),
+                                throwable -> Log.e(TAG, "Error sending verification", throwable));
             }
         });
 
@@ -242,10 +245,7 @@ public class CardReaderService extends Service {
                 mCommandService = null;
             }
         };
-
-        Intent intent = new Intent("com.guness.kiosk.service.intent.REMOTE");
-        intent.setPackage("com.guness.kiosk.service");
-        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        bindRemoteService();
     }
 
     private void killMetaTrader() {
@@ -279,8 +279,15 @@ public class CardReaderService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.e(TAG, "onStartCommand");
+        bindRemoteService();
         startBeeping();
         return START_STICKY;
+    }
+
+    private void bindRemoteService() {
+        Intent intent = new Intent("com.guness.kiosk.service.intent.REMOTE");
+        intent.setPackage("com.guness.kiosk.service");
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
     private void openDevice(UsbDevice device) {
