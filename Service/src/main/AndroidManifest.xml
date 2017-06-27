@@ -48,6 +48,10 @@
                 <action android:name="com.guness.kiosk.service.intent.REMOTE" />
             </intent-filter>
         </service>
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="8801efd9ba41f56a6f8342ef6df1f4b433297684" />
     </application>
 
+    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>
