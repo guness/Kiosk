@@ -1,7 +1,7 @@
 package com.guness.kiosk.webservice;
 
-import com.guness.kiosk.webservice.network.RequestWrapper;
-import com.guness.kiosk.webservice.network.ResponseWrapper;
+import com.guness.kiosk.webservice.util.RequestWrapper;
+import com.guness.kiosk.webservice.util.ResponseWrapper;
 import com.guness.kiosk.webservice.network.RetrieveRequest;
 import com.guness.kiosk.webservice.network.RetrieveResponse;
 import com.guness.kiosk.webservice.network.UpdateRequest;

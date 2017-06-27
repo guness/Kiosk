@@ -3,6 +3,8 @@ package com.guness.kiosk.webservice.manager;
 import com.guness.kiosk.webservice.CardService;
 import com.guness.kiosk.webservice.model.Card;
 import com.guness.kiosk.webservice.network.*;
+import com.guness.kiosk.webservice.util.RequestWrapper;
+import com.guness.kiosk.webservice.util.ResponseMapper;
 import io.reactivex.Observable;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -43,26 +45,26 @@ public class WebServiceManager {
 
     public Observable<ValidateResponse> validateCard(String number, String secret, String rfid) {
         ValidateRequest request = new ValidateRequest(number, secret, rfid);
-        return mCardService.validateCard(new RequestWrapper<>(request)).map(ResponseWrapper::getData);
+        return mCardService.validateCard(new RequestWrapper<>(request)).map(new ResponseMapper<>());
     }
 
     public Observable<ValidateResponse> validateCard(Card card) {
         ValidateRequest request = new ValidateRequest(card.Number, card.Secret, card.RFID);
-        return mCardService.validateCard(new RequestWrapper<>(request)).map(ResponseWrapper::getData);
+        return mCardService.validateCard(new RequestWrapper<>(request)).map(new ResponseMapper<>());
     }
 
     public Observable<UpdateResponse> updateCard(String number, String rfid) {
         UpdateRequest request = new UpdateRequest(number, rfid);
-        return mCardService.updateCard(new RequestWrapper<>(request)).map(ResponseWrapper::getData);
+        return mCardService.updateCard(new RequestWrapper<>(request)).map(new ResponseMapper<>());
     }
 
     public Observable<UpdateResponse> updateCard(Card card) {
         UpdateRequest request = new UpdateRequest(card.Number, card.RFID);
-        return mCardService.updateCard(new RequestWrapper<>(request)).map(ResponseWrapper::getData);
+        return mCardService.updateCard(new RequestWrapper<>(request)).map(new ResponseMapper<>());
     }
 
     public Observable<RetrieveResponse> retrieveCard(String bankId, String accountNumber) {
         RetrieveRequest request = new RetrieveRequest(bankId, accountNumber);
-        return mCardService.retrieveCardData(new RequestWrapper<>(request)).map(ResponseWrapper::getData);
+        return mCardService.retrieveCardData(new RequestWrapper<>(request)).map(new ResponseMapper<>());
     }
 }
