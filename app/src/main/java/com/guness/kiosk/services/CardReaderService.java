@@ -19,15 +19,18 @@ import android.util.Log;
 import com.acs.smartcard.Reader;
 import com.acs.smartcard.ReaderException;
 import com.guness.kiosk.BuildConfig;
-import com.guness.kiosk.core.WebServiceManager;
 import com.guness.kiosk.pages.MainActivity;
 import com.guness.kiosk.service.ICommandService;
 import com.guness.kiosk.utils.DeviceUtils;
-import com.guness.kiosk.ws.SCAValidateCardServiceResponse;
+import com.guness.kiosk.webservice.manager.WebServiceManager;
+import com.guness.kiosk.webservice.network.ValidateResponse;
 
 import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 import static com.guness.kiosk.core.Constants.ACTION_USB_PERMISSION;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -47,6 +50,15 @@ public class CardReaderService extends Service {
     final static byte[] command = {(byte) 0xFF, (byte) 0xCA, (byte) 0x00, (byte) 0x00, (byte) 0x0A};
     //Note last 6 byte is Key
     final static byte[] AUTH_COMMAND = {FF, (byte) 0x82, 0x00, 0x00, 0x06, FF, FF, FF, FF, FF, FF};
+
+    final static byte[] LOAD_SECTION_0 = {FF, (byte) 0x86, 0x00, 0x00, 0x05, 0x01, 0x00, 0x00, 0x60, 0x00};
+    final static byte[] READ_S0B0 = {FF, (byte) 0xB0, 0x00, 0x00, 0x10};
+    final static byte[] READ_S0B1 = {FF, (byte) 0xB0, 0x00, 0x01, 0x10};
+    final static byte[] READ_S0B2 = {FF, (byte) 0xB0, 0x00, 0x02, 0x10};
+    final static byte[] READ_S0B3 = {FF, (byte) 0xB0, 0x00, 0x03, 0x10};
+
+    final static byte[] LOAD_SECTION_1 = {FF, (byte) 0x86, 0x00, 0x00, 0x05, 0x01, 0x00, 0x04, 0x60, 0x00};
+    final static byte[] READ_S1B0 = {FF, (byte) 0xB0, 0x00, 0x04, 0x10};
     final static byte[] LOAD_SECTION_2 = {FF, (byte) 0x86, 0x00, 0x00, 0x05, 0x01, 0x00, 0x08, 0x60, 0x00};
     final static byte[] READ_S2B0 = {FF, (byte) 0xB0, 0x00, 0x08, 0x10};
     final static byte[] LOAD_SECTION_3 = {FF, (byte) 0x86, 0x00, 0x00, 0x05, 0x01, 0x00, 0x0C, 0x60, 0x00};
@@ -108,8 +120,9 @@ public class CardReaderService extends Service {
                 byte[] response = new byte[20];
                 int responseLength = 0;
 
-                String cardId = null;
+                String number = null;
                 String secret = null;
+                String rfid = null;
 
                 try {
                     mReader.power(slotNum, Reader.CARD_WARM_RESET);
@@ -117,6 +130,30 @@ public class CardReaderService extends Service {
                     responseLength = mReader.transmit(slotNum, command, command.length, response, response.length);
                     Log.e(TAG, "responseLength: " + responseLength);
                     Log.e(TAG, "response: " + Arrays.toString(response));
+
+                    // Send AUTH
+                    responseLength = mReader.transmit(slotNum, AUTH_COMMAND, AUTH_COMMAND.length, response, response.length);
+                    if (!matchesResponse(RESPONSE_OK, response, responseLength)) {
+                        Log.e(TAG, "Error on Authentication card");
+                        return;
+                    }
+
+                    //Pick Section 2
+                    responseLength = mReader.transmit(slotNum, LOAD_SECTION_0, LOAD_SECTION_0.length, response, response.length);
+                    if (!matchesResponse(RESPONSE_OK, response, responseLength)) {
+                        Log.e(TAG, "Cannot pick section 0");
+                        return;
+                    }
+
+                    //Read Block 0
+                    responseLength = mReader.transmit(slotNum, READ_S0B0, READ_S0B0.length, response, response.length);
+                    if (!matchesResponse(RESPONSE_OK, response, responseLength)) {
+                        Log.e(TAG, "Cannot read S0B0: " + Arrays.toString(response));
+                        return;
+                    } else {
+                        rfid = new String(response, 0, responseLength - RESPONSE_OK.length);
+                        Log.d(TAG, "RFID ID: " + rfid);
+                    }
 
                     // Send AUTH
                     responseLength = mReader.transmit(slotNum, AUTH_COMMAND, AUTH_COMMAND.length, response, response.length);
@@ -138,8 +175,8 @@ public class CardReaderService extends Service {
                         Log.e(TAG, "Cannot read S2B0: " + Arrays.toString(response));
                         return;
                     } else {
-                        cardId = new String(response, 0, responseLength - RESPONSE_OK.length);
-                        Log.d(TAG, "Card ID: " + cardId);
+                        number = new String(response, 0, responseLength - RESPONSE_OK.length);
+                        Log.d(TAG, "Card Number: " + number);
                     }
 
                     // Send AUTH
@@ -169,16 +206,14 @@ public class CardReaderService extends Service {
                 } catch (ReaderException e) {
                     e.printStackTrace();
                 }
-                if (cardId != null && secret != null) {
-                    try {
-                        SCAValidateCardServiceResponse serviceResponse = WebServiceManager.getInstance().validateCardData(cardId, secret);
-
-                        if (serviceResponse != null && serviceResponse.IsValid) {
-                            LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_CARD_ATTACHED));
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                if (number != null && secret != null && rfid != null) {
+                    WebServiceManager.getInstance().validateCard(number, secret, rfid)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .filter(validateResponse -> validateResponse != null)
+                            .filter(ValidateResponse::isValid)
+                            .subscribe(validateResponse -> LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_CARD_ATTACHED)),
+                                    throwable -> Log.e(TAG, "Error sending verification", throwable));
                 }
             }
         });
