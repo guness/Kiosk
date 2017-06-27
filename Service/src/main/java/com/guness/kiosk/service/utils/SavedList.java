@@ -35,7 +35,9 @@ public class SavedList {
         internalList.put(key, value);
         trimList();
         SharedPreferences.Editor editor = preferences.edit();
-        internalList.forEach(editor::putString);
+        for (Map.Entry<String, String> entry : internalList.entrySet()) {
+            editor.putString(entry.getKey(), entry.getValue());
+        }
         editor.apply();
     }
 
@@ -47,6 +49,10 @@ public class SavedList {
     }
 
     public String getValue(String key, String defaultValue) {
-        return internalList.getOrDefault(key, defaultValue);
+        String value = internalList.get(key);
+        if (value == null) {
+            value = defaultValue;
+        }
+        return value;
     }
 }
