@@ -16,13 +16,14 @@ import android.widget.Toast;
 import com.guness.kiosk.R;
 import com.guness.kiosk.core.BaseActivity;
 import com.guness.kiosk.utils.GlowingTask;
+import com.guness.kiosk.utils.RankListChooserHelper;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-import static com.guness.kiosk.services.OverlayService.ACTION_ENABLED;
 import static com.guness.kiosk.services.OverlayService.ACTION_DISABLED_COLORED;
+import static com.guness.kiosk.services.OverlayService.ACTION_ENABLED;
 
 public class TradeCenterActivity extends BaseActivity {
 
@@ -47,7 +48,7 @@ public class TradeCenterActivity extends BaseActivity {
     private GlowingTask mGlowingTask;
 
     private SharedPreferences mPrefs;
-
+    private RankListChooserHelper mChooserHelper;
 
     private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -78,6 +79,9 @@ public class TradeCenterActivity extends BaseActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        if (mChooserHelper!=null){
+            mChooserHelper.dismiss();
+        }
         mGlowingTask.stop();
         mGlowingTask = null;
         if (isFinishing()) {
@@ -108,7 +112,7 @@ public class TradeCenterActivity extends BaseActivity {
                 startActivity(webActivity.putExtra(WebActivity.EXTRA_URL, getString(R.string.url_bonus)));
                 break;
             case R.id.ranglist:
-                startActivity(webActivity.putExtra(WebActivity.EXTRA_URL, getString(R.string.url_ranglist)));
+                showRankListDialog();
                 break;
             case R.id.faq:
                 startActivity(webActivity.putExtra(WebActivity.EXTRA_URL, getString(R.string.url_faq)));
@@ -117,6 +121,11 @@ public class TradeCenterActivity extends BaseActivity {
         if (!TextUtils.isEmpty(text)) {
             Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void showRankListDialog() {
+        mChooserHelper = new RankListChooserHelper(this);
+        mChooserHelper.show();
     }
 
 

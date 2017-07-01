@@ -2,7 +2,8 @@
 <resources>
     <string name="url_news">http://tradecenter24.com/tradestationapp/news</string>
     <string name="url_bonus">http://tradecenter24.com/tradestationapp/bonus</string>
-    <string name="url_ranglist">http://tradecenter24.com/tradestationapp/jackpot</string>
+    <string name="url_ranglist_super">http://ranglist.tradecenter24.com:8081/bonus-private.html?q=%s</string>
+    <string name="url_ranglist_weekly">http://ranglist.tradecenter24.com:8081/weekly-private.html?q=%s</string>
     <string name="url_faq">http://tradecenter24.com/tradestationapp/faq</string>
     <string name="url_movie">http://tradecenter24.com/app/screensaver.mov</string>
 </resources>

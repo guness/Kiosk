@@ -20,6 +20,7 @@ import android.util.Log;
 import com.acs.smartcard.Reader;
 import com.acs.smartcard.ReaderException;
 import com.guness.kiosk.BuildConfig;
+import com.guness.kiosk.core.KioskApplication;
 import com.guness.kiosk.pages.MainActivity;
 import com.guness.kiosk.service.ICommandService;
 import com.guness.kiosk.utils.DeviceUtils;
@@ -216,7 +217,10 @@ public class CardReaderService extends Service {
                         .observeOn(AndroidSchedulers.mainThread())
                         .filter(validateResponse -> validateResponse != null)
                         .filter(ValidateResponse::isValid)
-                        .subscribe(validateResponse -> LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_CARD_ATTACHED)),
+                        .subscribe(validateResponse -> {
+                                    KioskApplication.cardData = validateResponse.getCardData();
+                                    LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_CARD_ATTACHED));
+                                },
                                 throwable -> Log.e(TAG, "Error sending verification", throwable));
             }
         });
@@ -249,6 +253,7 @@ public class CardReaderService extends Service {
     }
 
     private void killMetaTrader() {
+        KioskApplication.cardData = null;
         Log.e(TAG, "killMetaTrader: " + mCommandService);
         if (mCommandService != null) {
             try {

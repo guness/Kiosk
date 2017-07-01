@@ -6,6 +6,7 @@ import android.os.PowerManager;
 import com.crashlytics.android.Crashlytics;
 import com.guness.kiosk.BuildConfig;
 import com.guness.kiosk.webservice.manager.WebServiceManager;
+import com.guness.kiosk.webservice.model.CardData;
 
 import io.fabric.sdk.android.Fabric;
 
@@ -13,6 +14,8 @@ import io.fabric.sdk.android.Fabric;
  * Created by guness on 12/09/16.
  */
 public class KioskApplication extends Application {
+
+    public static volatile CardData cardData = null;
 
     @Override
     public void onCreate() {
