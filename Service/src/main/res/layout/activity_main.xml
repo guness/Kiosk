@@ -10,11 +10,18 @@
         tools:context="com.guness.kiosk.service.MainActivity">
 
         <TextView
+            android:id="@+id/ipView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/udidView"
+            android:layout_centerHorizontal="true" />
+
+        <TextView
             android:id="@+id/udidView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/inputText"
-            android:layout_centerInParent="true" />
+            android:layout_centerHorizontal="true" />
 
         <EditText
             android:id="@+id/inputText"
@@ -29,8 +36,33 @@
             android:layout_width="80dp"
             android:layout_height="wrap_content"
             android:layout_below="@+id/inputText"
-            android:layout_centerInParent="true"
+            android:layout_centerHorizontal="true"
             android:text="@string/save" />
+
+        <Button
+            android:id="@+id/enableUIButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/saveButton"
+            android:layout_centerHorizontal="true"
+            android:text="@string/enableSystemUI" />
+
+        <Button
+            android:id="@+id/disableUIButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/enableUIButton"
+            android:layout_centerHorizontal="true"
+            android:text="@string/disableSystemUI" />
+
+        <Button
+            android:id="@+id/reboot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/disableUIButton"
+            android:layout_centerHorizontal="true"
+            android:text="@string/reboot" />
+
     </RelativeLayout>
 
 </android.support.design.widget.CoordinatorLayout>

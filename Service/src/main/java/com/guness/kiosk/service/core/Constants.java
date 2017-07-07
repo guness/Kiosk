@@ -25,6 +25,7 @@ public class Constants {
         public static final String COMMAND_DISABLE_SYSTEMUI = "pm disable " + SYSTEMUI_PACKAGE;
         public static final String COMMAND_ENABLE_SYSTEMUI = "pm enable " + SYSTEMUI_PACKAGE;
         public static final String COMMAND_CREATE_META_PREFS = "mkdir " + META_PREFS;
+        public static final String COMMAND_REBOOT = "reboot";
 
 
         public static String CommandCopyMT4(String filePath) {

@@ -3,4 +3,9 @@
     <string name="permission_description">Required for accessing Kiosk Service.</string>
     <string name="device_name">Device Name</string>
     <string name="save">Save</string>
+    <string name="enableSystemUI">Enable System UI</string>
+    <string name="disableSystemUI">Disable System UI</string>
+    <string name="reboot">Reboot</string>
+    <string name="success">Success</string>
+    <string name="fail">Failed</string>
 </resources>
