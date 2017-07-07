@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_SUPERUSER" />
     <uses-permission android:name="android.permission.CLEAR_APP_CACHE" />
     <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".core.ServiceApplication"
@@ -37,9 +38,11 @@
             </intent-filter>
         </receiver>
 
+        <service android:name=".services.BackgroundService" />
         <service
-            android:name=".services.BackgroundService"
-            android:enabled="true" />
+            android:name=".services.JobExecutorService"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
         <service
             android:name=".services.InteractionService"
             android:enabled="true"
@@ -48,10 +51,11 @@
                 <action android:name="com.guness.kiosk.service.intent.REMOTE" />
             </intent-filter>
         </service>
+
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="8801efd9ba41f56a6f8342ef6df1f4b433297684" />
+
     </application>
 
-    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

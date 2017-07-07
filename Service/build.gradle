@@ -29,10 +29,10 @@ android {
     }
     defaultConfig {
         applicationId "com.guness.kiosk.service"
-        minSdkVersion 17
+        minSdkVersion 21
         targetSdkVersion 26
-        versionCode 1020
-        versionName "1.2"
+        versionCode 1021
+        versionName "1.3.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         jackOptions {
             enabled true

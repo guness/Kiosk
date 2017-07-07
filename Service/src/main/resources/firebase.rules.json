@@ -42,12 +42,30 @@
               ".read": "true"
             }
           }
-        }
+        },
+        "jobs": {
+          ".read": "true",
+          ".indexOn": "isExecuted",
+          "$command": {
+            "result": {
+              ".write": "true"
+            },
+            "job": {
+              ".read": "true"
+            }
+          }
+        },
       }
     },
     "globalCommands": {
       ".read": "true",
       "commands": {
+        ".indexOn": "isExecuted"
+      }
+    },
+    "globalJobs": {
+      ".read": "true",
+      "jobs": {
         ".indexOn": "isExecuted"
       }
     }
