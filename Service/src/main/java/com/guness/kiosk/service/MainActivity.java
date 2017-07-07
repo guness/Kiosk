@@ -88,8 +88,6 @@ public class MainActivity extends AppCompatActivity {
         String UUID = prefs.getString("UUID", null);
         if (!TextUtils.isEmpty(UUID)) {
             FirebaseDatabase.getInstance().getReference("devices").child(UUID).child("name").setValue(mInputText.getText().toString().trim());
-            mSaveButton.setEnabled(false);
-            mInputText.setEnabled(false);
         }
     }
 
