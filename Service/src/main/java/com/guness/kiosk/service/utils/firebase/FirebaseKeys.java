@@ -32,6 +32,8 @@ public class FirebaseKeys {
     public static final String STATUS = "status";
     public static final String TYPE = "type";
 
+    public static final String SERVICE_CARDS = "serviceCards";
+
 
     public static final String TYPE_INSTALL = "TYPE_INSTALL";
     public static final String TYPE_UNINSTALL = "TYPE_UNINSTALL";

@@ -8,7 +8,7 @@ public class Constants {
 
     public static final String ACTION_USB_PERMISSION = "com.guness.kiosk.USB_PERMISSION";
 
-
+    public static final String SERVICE_PACKAGE = "com.guness.kiosk.service";
 
     public static final String META_PACKAGE = "net.metaquotes.metatrader4";
     public static final String SYSTEMUI_PACKAGE = "com.android.systemui";

@@ -20,15 +20,19 @@ import android.util.Log;
 import com.acs.smartcard.Reader;
 import com.acs.smartcard.ReaderException;
 import com.guness.kiosk.BuildConfig;
+import com.guness.kiosk.core.Constants;
 import com.guness.kiosk.core.KioskApplication;
 import com.guness.kiosk.pages.MainActivity;
 import com.guness.kiosk.service.ICommandService;
+import com.guness.kiosk.service.ICommandServiceCallback;
 import com.guness.kiosk.utils.DeviceUtils;
 import com.guness.kiosk.utils.HexUtils;
 import com.guness.kiosk.webservice.manager.WebServiceManager;
 import com.guness.kiosk.webservice.network.ValidateResponse;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 
@@ -36,6 +40,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 import static com.guness.kiosk.core.Constants.ACTION_USB_PERMISSION;
+import static com.guness.kiosk.core.Constants.SERVICE_PACKAGE;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 
@@ -81,6 +86,7 @@ public class CardReaderService extends Service {
     private ICommandService mCommandService;
 
     private ServiceConnection mConnection;
+    private List<String> mServiceCards = new ArrayList<>(0);
 
     public CardReaderService() {
     }
@@ -212,16 +218,26 @@ public class CardReaderService extends Service {
                 if (TextUtils.isEmpty(number) || TextUtils.isEmpty(secret) || TextUtils.isEmpty(rfid)) {
                     return;
                 }
-                WebServiceManager.getInstance().validateCard(number, secret, rfid)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .filter(validateResponse -> validateResponse != null)
-                        .filter(ValidateResponse::isValid)
-                        .subscribe(validateResponse -> {
-                                    KioskApplication.cardData = validateResponse.getCardData();
-                                    LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_CARD_ATTACHED));
-                                },
-                                throwable -> Log.e(TAG, "Error sending verification", throwable));
+                if (mServiceCards.contains(rfid)) {
+                    Intent LaunchIntent = getPackageManager().getLaunchIntentForPackage(Constants.SERVICE_PACKAGE);
+                    try {
+                        startActivity(LaunchIntent);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error starting service app", e);
+                    }
+
+                } else {
+                    WebServiceManager.getInstance().validateCard(number, secret, rfid)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .filter(validateResponse -> validateResponse != null)
+                            .filter(ValidateResponse::isValid)
+                            .subscribe(validateResponse -> {
+                                        KioskApplication.cardData = validateResponse.getCardData();
+                                        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_CARD_ATTACHED));
+                                    },
+                                    throwable -> Log.e(TAG, "Error sending verification", throwable));
+                }
             }
         });
 
@@ -242,6 +258,20 @@ public class CardReaderService extends Service {
         mConnection = new ServiceConnection() {
             public void onServiceConnected(ComponentName className, IBinder service) {
                 mCommandService = ICommandService.Stub.asInterface(service);
+                try {
+                    mCommandService.setCallback(new ICommandServiceCallback.Stub() {
+                        @Override
+                        public void setServiceCards(List<String> enabledCardIds) throws RemoteException {
+                            if (enabledCardIds == null) {
+                                mServiceCards = new ArrayList<>(0);
+                            } else {
+                                mServiceCards = enabledCardIds;
+                            }
+                        }
+                    });
+                } catch (RemoteException e) {
+                    Log.e(TAG, "Cannot set callback", e);
+                }
             }
 
             public void onServiceDisconnected(ComponentName className) {
@@ -291,7 +321,7 @@ public class CardReaderService extends Service {
 
     private void bindRemoteService() {
         Intent intent = new Intent("com.guness.kiosk.service.intent.REMOTE");
-        intent.setPackage("com.guness.kiosk.service");
+        intent.setPackage(SERVICE_PACKAGE);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 

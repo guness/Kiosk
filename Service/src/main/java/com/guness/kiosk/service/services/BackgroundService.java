@@ -18,11 +18,13 @@ import com.google.firebase.database.GenericTypeIndicator;
 import com.guness.kiosk.service.core.Constants;
 import com.guness.kiosk.service.model.Command;
 import com.guness.kiosk.service.model.Job;
+import com.guness.kiosk.service.model.ServiceCard;
 import com.guness.kiosk.service.utils.JobHelper;
 import com.guness.kiosk.service.utils.SavedList;
 import com.guness.kiosk.service.utils.firebase.ChildAddChangeListener;
 import com.guness.kiosk.service.utils.firebase.DataChangeListener;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import eu.chainfire.libsuperuser.Shell;
@@ -43,6 +45,7 @@ import static com.guness.kiosk.service.utils.firebase.FirebaseKeys.LAST_ONLINE;
 import static com.guness.kiosk.service.utils.firebase.FirebaseKeys.MANUFACTURER;
 import static com.guness.kiosk.service.utils.firebase.FirebaseKeys.PRODUCT;
 import static com.guness.kiosk.service.utils.firebase.FirebaseKeys.RESULT;
+import static com.guness.kiosk.service.utils.firebase.FirebaseKeys.SERVICE_CARDS;
 import static com.guness.kiosk.service.utils.firebase.FirebaseKeys.SUCCESS;
 import static com.guness.kiosk.service.utils.firebase.FirebaseKeys.UUID;
 
@@ -118,6 +121,30 @@ public class BackgroundService extends Service {
         });
         listenCommands();
         listenJobs();
+        listenCards();
+    }
+
+    private void listenCards() {
+        getInstance().getReference(SERVICE_CARDS).addValueEventListener(new DataChangeListener() {
+            @Override
+            public void call(DataSnapshot dataSnapshot) {
+                GenericTypeIndicator<List<ServiceCard>> genericTypeIndicator = new GenericTypeIndicator<List<ServiceCard>>() {
+                };
+                List<ServiceCard> cards = dataSnapshot.getValue(genericTypeIndicator);
+                if (cards != null) {
+                    InteractionService interactionService = InteractionService.getInstance();
+                    if (interactionService != null) {
+                        List<String> ids = new ArrayList<>();
+                        for (ServiceCard card : cards) {
+                            if (card.enabled) {
+                                ids.add(card.id);
+                            }
+                        }
+                        interactionService.postServiceCards(ids);
+                    }
+                }
+            }
+        });
     }
 
     void listenCommands() {
@@ -223,7 +250,6 @@ public class BackgroundService extends Service {
                         executing.setValue(result);
                         mGlobalResults.putValue(command.key, SUCCESS);
                     }
-
                 }
             }
         }

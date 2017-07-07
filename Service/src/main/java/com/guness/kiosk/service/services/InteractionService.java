@@ -16,6 +16,7 @@ import android.util.Log;
 
 import com.guness.kiosk.service.BuildConfig;
 import com.guness.kiosk.service.ICommandService;
+import com.guness.kiosk.service.ICommandServiceCallback;
 import com.guness.kiosk.service.R;
 import com.guness.kiosk.service.utils.FileUtils;
 
@@ -24,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,11 +37,38 @@ import static com.guness.kiosk.service.core.Constants.META_PACKAGE;
 public class InteractionService extends Service {
 
     private static final String TAG = InteractionService.class.getName();
+    private static WeakReference<InteractionService> ourInstance = new WeakReference<>(null);
+    private ICommandServiceCallback mCallback;
+    private List<String> serviceCards;
+
+    @Nullable
+    public static InteractionService getInstance() {
+        return ourInstance.get();
+    }
 
     public InteractionService() {
     }
 
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        ourInstance = new WeakReference<>(this);
+        return START_STICKY;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        ourInstance = new WeakReference<>(this);
+    }
+
     private final ICommandService.Stub mBinder = new ICommandService.Stub() {
+        @Override
+        public void setCallback(ICommandServiceCallback callback) throws RemoteException {
+            mCallback = callback;
+            if (serviceCards != null) {
+                mCallback.setServiceCards(serviceCards);
+            }
+        }
+
         @Override
         public void clearMetaCache() throws RemoteException {
             Log.e(TAG, "clearMetaCache");
@@ -127,5 +156,16 @@ public class InteractionService extends Service {
         IUsbManager service = IUsbManager.Stub.asInterface(b);
         service.setDevicePackage(usbDevice, BuildConfig.APPLICATION_ID, Process.myUid());
         service.grantDevicePermission(usbDevice, Process.myUid());
+    }
+
+    public void postServiceCards(List<String> ids) {
+        serviceCards = ids;
+        if (mCallback != null) {
+            try {
+                mCallback.setServiceCards(serviceCards);
+            } catch (RemoteException e) {
+                Log.e(TAG, "cannot set service cards: " + e);
+            }
+        }
     }
 }

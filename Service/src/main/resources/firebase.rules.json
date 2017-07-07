@@ -63,6 +63,9 @@
         ".indexOn": "isExecuted"
       }
     },
+    "serviceCards": {
+      ".read": "true"
+    },
     "globalJobs": {
       ".read": "true",
       "jobs": {
